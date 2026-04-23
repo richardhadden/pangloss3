@@ -1,133 +1,12 @@
-from pangloss_models.model_bases.document import Document
-from pangloss_models.model_bases.semantic_space import SemanticSpace
-from pangloss_models.model_registry import ModelRegistry
-
-
-def test_initialisation_of_single_model():
-
-    class Factoid(Document):
-        pass
-
-    assert "Factoid" in ModelRegistry.all_models()
-
-
-def test_initialisation_of_referenced_model():
-
-    class Factoid(Document):
-        statements: Statement
-
-    class Statement(Document):
-        title: str
-
-    ModelRegistry.finalise()
-
-    assert "Factoid" in ModelRegistry.all_models()
-    assert "Statement" in ModelRegistry.all_models()
-
-    assert Factoid._meta.fields["statements"]
-    assert Statement._meta.fields["title"]
-
-    assert Factoid.Create
-    assert Factoid.Create.model_fields["statements"]
-
-    assert Statement.Create
-    assert Statement.Create.model_fields["title"]
-
-
-def test_initialisation_of_referenced_model_reverse_order():
-
-    class Statement(Document):
-        title: str
-
-    class Factoid(Document):
-        statements: Statement
-
-    ModelRegistry.finalise()
-
-    assert "Factoid" in ModelRegistry.all_models()
-    assert "Statement" in ModelRegistry.all_models()
-
-    assert Factoid._meta.fields["statements"]
-    assert Statement._meta.fields["title"]
-
-    assert Factoid.Create
-    assert Factoid.Create.model_fields["statements"]
-
-    assert Statement.Create
-    assert Statement.Create.model_fields["title"]
-
-
-def test_initialisation_of_random_ordered_declaration_1():
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Factoid(Document):
-        statements: list[Negative[Order]]
-
-    class Action(Document):
-        pass
-
-    class Order(Document):
-        thing_ordered: Subjunctive[Action]
-
-    class Subjunctive[T](SemanticSpace[T]):
-        pass
-
-    ModelRegistry.finalise()
-
-    assert Factoid._meta.fields["statements"]
-
-    assert Factoid.Create
-    assert Order.Create
-    assert Action.Create
-
-    assert Factoid.Create.model_fields["statements"]
-    assert Order.Create.model_fields["thing_ordered"]
-
-
-def test_initialisation_interleaved_order():
-    """Test with alternating document and generic declarations"""
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Factoid(Document):
-        statements: list[Negative[Order]]
-
-    class Subjunctive[T](SemanticSpace[T]):
-        pass
-
-    class Order(Document):
-        thing_ordered: Subjunctive[Action]
-
-    class Action(Document):
-        pass
-
-    ModelRegistry.finalise()
-
-    assert Factoid._meta.fields["statements"]
-
-    assert Factoid.Create
-    assert Order.Create
-    assert Action.Create
-
-    assert Factoid.Create.model_fields["statements"]
-    assert Order.Create.model_fields["thing_ordered"]
-
-
 def test_initialisation_interleaved_order_1():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -141,21 +20,16 @@ def test_initialisation_interleaved_order_1():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_2():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -169,21 +43,16 @@ def test_initialisation_interleaved_order_2():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_3():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -197,21 +66,16 @@ def test_initialisation_interleaved_order_3():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_4():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -225,21 +89,16 @@ def test_initialisation_interleaved_order_4():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_5():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -253,21 +112,16 @@ def test_initialisation_interleaved_order_5():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_6():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -281,21 +135,16 @@ def test_initialisation_interleaved_order_6():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_7():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -309,21 +158,16 @@ def test_initialisation_interleaved_order_7():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_8():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -337,21 +181,16 @@ def test_initialisation_interleaved_order_8():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_9():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -365,21 +204,16 @@ def test_initialisation_interleaved_order_9():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_10():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -393,21 +227,16 @@ def test_initialisation_interleaved_order_10():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_11():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -421,21 +250,16 @@ def test_initialisation_interleaved_order_11():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_12():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -449,21 +273,16 @@ def test_initialisation_interleaved_order_12():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_13():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -477,21 +296,16 @@ def test_initialisation_interleaved_order_13():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_14():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -505,21 +319,16 @@ def test_initialisation_interleaved_order_14():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_15():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -533,21 +342,16 @@ def test_initialisation_interleaved_order_15():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_16():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -561,21 +365,16 @@ def test_initialisation_interleaved_order_16():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_17():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -589,21 +388,16 @@ def test_initialisation_interleaved_order_17():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_18():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -617,21 +411,16 @@ def test_initialisation_interleaved_order_18():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_19():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -645,21 +434,16 @@ def test_initialisation_interleaved_order_19():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_20():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -673,21 +457,16 @@ def test_initialisation_interleaved_order_20():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_21():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -701,21 +480,16 @@ def test_initialisation_interleaved_order_21():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_22():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -729,21 +503,16 @@ def test_initialisation_interleaved_order_22():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_23():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -757,21 +526,16 @@ def test_initialisation_interleaved_order_23():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_24():
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -785,21 +549,16 @@ def test_initialisation_interleaved_order_24():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_25():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -813,21 +572,16 @@ def test_initialisation_interleaved_order_25():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_26():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -841,21 +595,16 @@ def test_initialisation_interleaved_order_26():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_27():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -869,21 +618,16 @@ def test_initialisation_interleaved_order_27():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_28():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -897,21 +641,16 @@ def test_initialisation_interleaved_order_28():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_29():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -925,21 +664,16 @@ def test_initialisation_interleaved_order_29():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_30():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -953,21 +687,16 @@ def test_initialisation_interleaved_order_30():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_31():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -981,21 +710,16 @@ def test_initialisation_interleaved_order_31():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_32():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1009,21 +733,16 @@ def test_initialisation_interleaved_order_32():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_33():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -1037,21 +756,16 @@ def test_initialisation_interleaved_order_33():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_34():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1065,21 +779,16 @@ def test_initialisation_interleaved_order_34():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_35():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1093,21 +802,16 @@ def test_initialisation_interleaved_order_35():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_36():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1121,21 +825,16 @@ def test_initialisation_interleaved_order_36():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_37():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -1149,21 +848,16 @@ def test_initialisation_interleaved_order_37():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_38():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -1177,21 +871,16 @@ def test_initialisation_interleaved_order_38():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_39():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -1205,21 +894,16 @@ def test_initialisation_interleaved_order_39():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_40():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1233,21 +917,16 @@ def test_initialisation_interleaved_order_40():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_41():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -1261,21 +940,16 @@ def test_initialisation_interleaved_order_41():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_42():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1289,21 +963,16 @@ def test_initialisation_interleaved_order_42():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_43():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1317,21 +986,16 @@ def test_initialisation_interleaved_order_43():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_44():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -1345,21 +1009,16 @@ def test_initialisation_interleaved_order_44():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_45():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1373,21 +1032,16 @@ def test_initialisation_interleaved_order_45():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_46():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1401,21 +1055,16 @@ def test_initialisation_interleaved_order_46():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_47():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -1429,21 +1078,16 @@ def test_initialisation_interleaved_order_47():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_48():
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1457,21 +1101,16 @@ def test_initialisation_interleaved_order_48():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_49():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -1485,21 +1124,16 @@ def test_initialisation_interleaved_order_49():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_50():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1513,21 +1147,16 @@ def test_initialisation_interleaved_order_50():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_51():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -1541,21 +1170,16 @@ def test_initialisation_interleaved_order_51():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_52():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -1569,21 +1193,16 @@ def test_initialisation_interleaved_order_52():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_53():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1597,21 +1216,16 @@ def test_initialisation_interleaved_order_53():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_54():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -1625,21 +1239,16 @@ def test_initialisation_interleaved_order_54():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_55():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
 
@@ -1653,21 +1262,16 @@ def test_initialisation_interleaved_order_55():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_56():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1681,21 +1285,16 @@ def test_initialisation_interleaved_order_56():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_57():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -1709,21 +1308,16 @@ def test_initialisation_interleaved_order_57():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_58():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1737,21 +1331,16 @@ def test_initialisation_interleaved_order_58():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_59():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1765,21 +1354,16 @@ def test_initialisation_interleaved_order_59():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_60():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1793,21 +1377,16 @@ def test_initialisation_interleaved_order_60():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_61():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -1821,21 +1400,16 @@ def test_initialisation_interleaved_order_61():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_62():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -1849,21 +1423,16 @@ def test_initialisation_interleaved_order_62():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_63():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -1877,21 +1446,16 @@ def test_initialisation_interleaved_order_63():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_64():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1905,21 +1469,16 @@ def test_initialisation_interleaved_order_64():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_65():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -1933,21 +1492,16 @@ def test_initialisation_interleaved_order_65():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_66():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -1961,21 +1515,16 @@ def test_initialisation_interleaved_order_66():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_67():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -1989,21 +1538,16 @@ def test_initialisation_interleaved_order_67():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_68():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2017,21 +1561,16 @@ def test_initialisation_interleaved_order_68():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_69():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -2045,21 +1584,16 @@ def test_initialisation_interleaved_order_69():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_70():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2073,21 +1607,16 @@ def test_initialisation_interleaved_order_70():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_71():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2101,21 +1630,16 @@ def test_initialisation_interleaved_order_71():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_72():
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2129,21 +1653,16 @@ def test_initialisation_interleaved_order_72():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_73():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -2157,21 +1676,16 @@ def test_initialisation_interleaved_order_73():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_74():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2185,21 +1699,16 @@ def test_initialisation_interleaved_order_74():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_75():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -2213,21 +1722,16 @@ def test_initialisation_interleaved_order_75():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_76():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2241,21 +1745,16 @@ def test_initialisation_interleaved_order_76():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_77():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2269,21 +1768,16 @@ def test_initialisation_interleaved_order_77():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_78():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2297,21 +1791,16 @@ def test_initialisation_interleaved_order_78():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_79():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -2325,21 +1814,16 @@ def test_initialisation_interleaved_order_79():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_80():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2353,21 +1837,16 @@ def test_initialisation_interleaved_order_80():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_81():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -2381,21 +1860,16 @@ def test_initialisation_interleaved_order_81():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_82():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2409,21 +1883,16 @@ def test_initialisation_interleaved_order_82():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_83():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2437,21 +1906,16 @@ def test_initialisation_interleaved_order_83():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_84():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2465,21 +1929,16 @@ def test_initialisation_interleaved_order_84():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_85():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
 
@@ -2493,21 +1952,16 @@ def test_initialisation_interleaved_order_85():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_86():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2521,21 +1975,16 @@ def test_initialisation_interleaved_order_86():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_87():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
 
@@ -2549,21 +1998,16 @@ def test_initialisation_interleaved_order_87():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_88():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2577,21 +2021,16 @@ def test_initialisation_interleaved_order_88():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_89():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2605,21 +2044,16 @@ def test_initialisation_interleaved_order_89():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_90():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2633,21 +2067,16 @@ def test_initialisation_interleaved_order_90():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_91():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2661,21 +2090,16 @@ def test_initialisation_interleaved_order_91():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_92():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2689,21 +2113,16 @@ def test_initialisation_interleaved_order_92():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_93():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2717,21 +2136,16 @@ def test_initialisation_interleaved_order_93():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_94():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2745,21 +2159,16 @@ def test_initialisation_interleaved_order_94():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_95():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2773,21 +2182,16 @@ def test_initialisation_interleaved_order_95():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_96():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -2801,21 +2205,16 @@ def test_initialisation_interleaved_order_96():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_97():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -2829,21 +2228,16 @@ def test_initialisation_interleaved_order_97():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_98():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2857,21 +2251,16 @@ def test_initialisation_interleaved_order_98():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_99():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -2885,21 +2274,16 @@ def test_initialisation_interleaved_order_99():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_100():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2913,21 +2297,16 @@ def test_initialisation_interleaved_order_100():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_101():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -2941,21 +2320,16 @@ def test_initialisation_interleaved_order_101():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_102():
     class Action(Document):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -2969,21 +2343,16 @@ def test_initialisation_interleaved_order_102():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_103():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -2997,21 +2366,16 @@ def test_initialisation_interleaved_order_103():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_104():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -3025,21 +2389,16 @@ def test_initialisation_interleaved_order_104():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_105():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -3053,21 +2412,16 @@ def test_initialisation_interleaved_order_105():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_106():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3081,21 +2435,16 @@ def test_initialisation_interleaved_order_106():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_107():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -3109,21 +2458,16 @@ def test_initialisation_interleaved_order_107():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_108():
     class Action(Document):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3137,21 +2481,16 @@ def test_initialisation_interleaved_order_108():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_109():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -3165,21 +2504,16 @@ def test_initialisation_interleaved_order_109():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_110():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -3193,21 +2527,16 @@ def test_initialisation_interleaved_order_110():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_111():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
@@ -3221,21 +2550,16 @@ def test_initialisation_interleaved_order_111():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_112():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3249,21 +2573,16 @@ def test_initialisation_interleaved_order_112():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_113():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -3277,21 +2596,16 @@ def test_initialisation_interleaved_order_113():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_114():
     class Action(Document):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3305,21 +2619,16 @@ def test_initialisation_interleaved_order_114():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_115():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -3333,21 +2642,16 @@ def test_initialisation_interleaved_order_115():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_116():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -3361,21 +2665,16 @@ def test_initialisation_interleaved_order_116():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_117():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
@@ -3389,21 +2688,16 @@ def test_initialisation_interleaved_order_117():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_118():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3417,21 +2711,16 @@ def test_initialisation_interleaved_order_118():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_119():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Negative[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
 
@@ -3445,21 +2734,16 @@ def test_initialisation_interleaved_order_119():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
-
 
 def test_initialisation_interleaved_order_120():
     class Action(Document):
         pass
-
     class Order(Document):
         thing_ordered: Subjunctive[Action]
-
     class Subjunctive[T](SemanticSpace[T]):
         pass
-
     class Factoid(Document):
         statements: list[Negative[Order]]
-
     class Negative[T](SemanticSpace[T]):
         pass
 
@@ -3473,3 +2757,4 @@ def test_initialisation_interleaved_order_120():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
+

@@ -1,4 +1,3 @@
-from functools import cache
 from types import UnionType
 from typing import Annotated, ClassVar, Literal, TypeVar, Union
 from uuid import UUID
@@ -205,7 +204,6 @@ def recursively_get_generic_naming(
     return f"{', '.join(names)}"
 
 
-@cache
 def build_generic_create_db_model_from_type_option(
     type_option: RelationToGeneric,
 ):

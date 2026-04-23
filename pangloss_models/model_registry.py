@@ -1,5 +1,4 @@
 import heapq
-import traceback
 from typing import ClassVar, get_args, get_origin
 
 from pydantic import BaseModel
@@ -18,6 +17,7 @@ class ModelRegistry:
 
     @classmethod
     def _reset(cls):
+        print("RESETTING")
         cls._models = []
         cls._model_set = set()
 
@@ -34,6 +34,8 @@ class ModelRegistry:
         if model not in cls._model_set:
             cls._models.append(model)
             cls._model_set.add(model)
+
+        print(len(cls._model_set))
 
     @classmethod
     def all_models(cls) -> dict[str, type[BaseModel]]:
@@ -144,7 +146,7 @@ class ModelRegistry:
                         heapq.heappush(heap, (cls._model_key(other), id(other), other))
 
         cyclic = {n for n in graph if indegree[n] > 0}
-
+        del heap
         return ordered, cyclic
 
     # ----------------------------
@@ -161,26 +163,12 @@ class ModelRegistry:
         # --- Phase 1: Pydantic rebuild ---
         namespace = cls.all_models()
 
-        # for model in cls._models:
-        # model.model_rebuild(force=True, _types_namespace=namespace)
+        for model in cls._models:
+            model.model_rebuild(force=True, _types_namespace=namespace)
 
         # --- Phase 2: dependency ordering ---
         graph = cls._build_graph()
         order, cyclic = cls._toposort(graph)
-
-        if cyclic and not allow_cycles:
-            names = [cls._model_key(m) for m in cyclic]
-            raise RuntimeError(f"Cyclic dependencies detected: {names}")
-
-        # --- Phase 3: initialise in order ---
-        for model in order:
-            model.model_rebuild(force=True, _types_namespace=namespace)
-            # cls._initialise_model(model)
-
-        # --- Phase 4: fallback for cycles ---
-        for model in cyclic:
-            model.model_rebuild(force=True, _types_namespace=namespace)
-            # cls._initialise_model(model)
 
         # --- Phase 3: initialise in order ---
         for model in order:
@@ -222,37 +210,15 @@ class ModelRegistry:
             initialise_reference_view_model,
         )
 
-        try:
-            initialise_field_definitions(model)
-        except:
-            traceback.print_exc()
-            return
+        initialise_field_definitions(model)
 
-        try:
-            initialise_reference_set_model(model)
-            initialise_reference_view_model(model)
-        except:
-            return
+        initialise_reference_set_model(model)
+        initialise_reference_view_model(model)
 
-        try:
-            initialise_create_model(model)
-        except Exception as e:
-            print(e)
-            return
+        initialise_create_model(model)
 
-        try:
-            add_fields_to_create_model(model.Create, [])
-        except Exception as e:
-            raise e
+        add_fields_to_create_model(model.Create, [])
 
-        try:
-            initialise_create_db_model(model)
-        except Exception as e:
-            print(e)
-            return
+        initialise_create_db_model(model)
 
-        try:
-            add_fields_to_create_db_model(model)
-        except Exception as e:
-            print(e)
-            return
+        add_fields_to_create_db_model(model)

@@ -1,4 +1,3 @@
-import traceback
 import warnings
 from abc import ABC, abstractmethod
 from functools import cache
@@ -67,10 +66,12 @@ class _DeclaredClass(_BaseObject):
     def __initialise__(cls):
         cls._initialised = True
 
+    """
     @classmethod
     def __pydantic_on_complete__(cls) -> None:
 
         try:
+            pass
             ModelRegistry.finalise()
 
         except Exception as e:
@@ -79,6 +80,7 @@ class _DeclaredClass(_BaseObject):
             pass
 
         return super().__pydantic_on_complete__()
+    """
 
     @classmethod
     def initialise_meta(cls):

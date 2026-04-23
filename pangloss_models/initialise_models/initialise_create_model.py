@@ -1,4 +1,3 @@
-from functools import cache
 from types import UnionType
 from typing import Annotated, ClassVar, Literal, TypeVar, Union, cast
 from uuid import UUID
@@ -195,7 +194,6 @@ def recursively_get_generic_naming(
     return f"{', '.join(names)}"
 
 
-@cache
 def build_generic_create_model_from_type_option(
     type_option: RelationToGeneric, field_bindings
 ):
@@ -264,6 +262,7 @@ def build_generic_create_model_from_type_option(
                     if isinstance(to, RelationToEntity):
                         # ... if there is an edge model, add the applied_edge_model
                         # version of annotated_type.ReferenceSet to annotation
+
                         if to.edge_model:
                             annotations.append(
                                 to.annotated_type.ReferenceSet.apply_edge_model(
