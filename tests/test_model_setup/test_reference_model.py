@@ -3,6 +3,7 @@ from uuid import UUID, uuid7
 
 from pydantic import AnyHttpUrl
 
+from pangloss_models import initialise
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.edge_model import EdgeModel
 from pangloss_models.model_bases.entity import Entity
@@ -12,6 +13,8 @@ from pangloss_models.model_bases.reified_relation import ReifiedRelationDocument
 def test_reference_set_on_entities():
     class Person(Entity):
         pass
+
+    initialise()
 
     assert Person.ReferenceSet
     assert Person.ReferenceSet.model_fields["type"].annotation == Literal["Person"]
@@ -25,6 +28,8 @@ def test_reference_set_with_edge_property():
 
     class Certainty(EdgeModel):
         certainty: int
+
+    initialise()
 
     assert Person.ReferenceSet
 
@@ -59,6 +64,8 @@ def test_reference_view_on_entities():
     class Person(Entity):
         age: int
 
+    initialise()
+
     assert Person.ReferenceView
     assert Person.ReferenceView.model_fields["type"].annotation == Literal["Person"]
     assert Person.ReferenceView.model_fields["id"].annotation == UUID
@@ -71,6 +78,8 @@ def test_reference_view_via_edge():
 
     class Certainty(EdgeModel):
         certainty: int
+
+    initialise()
 
     assert Person.ReferenceView
 
@@ -107,6 +116,8 @@ def test_reference_view_on_entities_with_extra_fields():
         _meta = Entity.Meta(reference_view_extra_fields=["age"])
         age: int
 
+    initialise()
+
     assert Person.ReferenceView
     assert Person.ReferenceView.model_fields["type"].annotation == Literal["Person"]
     assert Person.ReferenceView.model_fields["id"].annotation == UUID
@@ -116,6 +127,8 @@ def test_reference_view_on_entities_with_extra_fields():
 def test_reference_view_on_documents():
     class Statement(Document):
         age: int
+
+    initialise()
 
     assert Statement.ReferenceView
     assert (
@@ -131,6 +144,8 @@ def test_reference_view_via_edge_on_document():
 
     class Certainty(EdgeModel):
         certainty: int
+
+    initialise()
 
     assert Statement.ReferenceView
 
@@ -176,6 +191,8 @@ def test_reference_view_on_reified_relation_document():
     class Person(Entity):
         pass
 
+    initialise()
+
     assert InPlace[Person].ReferenceView
 
     assert InPlace[Person].ReferenceView.model_fields["label"].annotation is str
@@ -197,6 +214,8 @@ def test_reference_view_on_reified_relation_document_via_edge_model():
 
     class Certainty(EdgeModel):
         certainty: int
+
+    initialise()
 
     assert InPlace[Person].ReferenceView
 

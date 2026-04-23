@@ -7,6 +7,7 @@ from uuid import UUID, uuid7
 import pytest
 from pydantic import AnyHttpUrl, ValidationError
 
+from pangloss_models import initialise
 from pangloss_models.exceptions import PanglossMetaError
 from pangloss_models.field_definitions import (
     FieldBinding,
@@ -39,6 +40,8 @@ def test_camel_case():
     class Statement(Document):
         some_snake: str
 
+    initialise()
+
     st = Statement.Create(**dict(label="A statement", someSnake="hello"))
     assert st.some_snake == "hello"
 
@@ -48,6 +51,8 @@ def test_meta_accessible_through_create():
     class Statement(Document):
         some_snake: str
 
+    initialise()
+
     assert Statement.Create._meta is Statement._meta
 
 
@@ -56,6 +61,8 @@ def test_type_field_is_correct():
     class Statement(Document):
         pass
 
+    initialise()
+
     assert Statement.Create.model_fields["type"].annotation == Literal["Statement"]
 
 
@@ -63,6 +70,8 @@ def test_type_field_is_correct():
 def test_create_model_for_document_with_no_id():
     class Statement(Document):
         pass
+
+    initialise()
 
     assert Statement.Create
 
@@ -78,6 +87,8 @@ def test_create_model_for_document_with_no_id():
 def test_create_model_for_document_with_id_allowed():
     class Statement(Document):
         _meta = Document.Meta(create_with_id=True)
+
+    initialise()
 
     assert Statement.Create
     assert "id" in Statement.Create.model_fields
@@ -99,6 +110,8 @@ def test_create_model_for_document_with_id_and_url_allowed_and_no_label():
             create_with_id=True, accept_url_as_id=True, require_label=False
         )
 
+    initialise()
+
     assert Statement.Create
     assert "id" in Statement.Create.model_fields
 
@@ -119,6 +132,8 @@ def test_create_model_for_entity():
     class Person(Entity):
         pass
 
+    initialise()
+
     assert Person.Create
 
     assert "id" not in Person.Create.model_fields
@@ -132,14 +147,20 @@ def test_entity_meta_requires_create_id_if_create_inline():
         class Fails(Entity):
             _meta = Entity.Meta(create_inline=True)
 
+        initialise()
+
     class Works(Entity):
         _meta = Entity.Meta(create_inline=True, create_with_id=True)
+
+    initialise()
 
 
 @no_type_check
 def test_create_model_for_entity_with_id():
     class Person(Entity):
         _meta = Entity.Meta(create_with_id=True)
+
+    initialise()
 
     assert Person.Create
 
@@ -165,6 +186,8 @@ def test_build_base_create_model_for_reified_relation():
     class Identification[TTarget](ReifiedRelation[TTarget]):
         pass
 
+    initialise()
+
     assert "id" not in Identification.Create.model_fields
 
 
@@ -174,6 +197,8 @@ def test_add_fields_to_document_create_model():
         name: str
         age: int
         numbers: list[int]
+
+    initialise()
 
     assert "name" in Statement.Create.model_fields
     name_field = Statement.Create.model_fields["name"]
@@ -206,6 +231,8 @@ def test_add_simple_relation_from_document_to_entity():
     class Person(Entity):
         pass
 
+    initialise()
+
     assert Statement.Create
     assert Statement.Create.model_fields["was_carried_out_by"]
     assert (
@@ -226,6 +253,8 @@ def test_add_simple_relation_from_document_to_entity_inheriting():
     class Dude(Person):
         pass
 
+    initialise()
+
     assert Statement.Create
     assert Statement.Create.model_fields["was_carried_out_by"]
     assert (
@@ -245,6 +274,8 @@ def test_add_simple_relation_from_document_to_by_union():
 
     class Dude(Entity):
         pass
+
+    initialise()
 
     assert Statement.Create
     assert Statement.Create.model_fields["was_carried_out_by"]
@@ -267,6 +298,8 @@ def test_add_simple_relation_from_document_to_entity_with_list_wrapper():
 
     class Person(Entity):
         pass
+
+    initialise()
 
     assert Statement.Create
     assert Statement.Create.model_fields["was_carried_out_by"]
@@ -293,6 +326,8 @@ def test_add_simple_relation_from_document_to_entity_via_edge():
     class Certainty(EdgeModel):
         pass
 
+    initialise()
+
     assert Statement.Create
     assert Statement.Create.model_fields["was_carried_out_by"]
     assert (
@@ -316,6 +351,8 @@ def test_add_relation_from_document_to_document():
     class Action(Document):
         pass
 
+    initialise()
+
     assert "action" in Statement._meta.fields
     assert Statement.Create.model_fields["action"]
     assert Statement.Create.model_fields["action"].annotation is Action.Create
@@ -331,6 +368,8 @@ def test_add_relation_from_document_to_document_via_edge():
 
     class Certainty(EdgeModel):
         pass
+
+    initialise()
 
     assert "action" in Statement._meta.fields
     assert Statement.Create.model_fields["action"]
@@ -354,6 +393,8 @@ def test_add_self_reference_to_document():
     class SubTask(Task):
         pass
 
+    initialise()
+
     assert (
         Order.Create.model_fields["thing_ordered"].annotation
         == Order.Create | DeferredOrder.Create | Task.Create | SubTask.Create
@@ -370,6 +411,8 @@ def test_relation_to_entity_via_reified_relation():
 
     class Person(Entity):
         pass
+
+    initialise()
 
     assert issubclass(Identification.Create, _ReifiedRelationCreateBase)
     assert Identification.Create.model_fields["some_value"].annotation is int
@@ -422,6 +465,8 @@ def test_relation_with_double_reified_relation():
 
     class Person(Entity):
         pass
+
+    initialise()
 
     is_about_person_field = Statement.Create.model_fields["is_about_person"]
     assert (
@@ -509,6 +554,8 @@ def test_relation_with_semantic_space():
     class Statement(Document):
         text: str
 
+    initialise()
+
     statement_field = Factoid.Create.model_fields["has_statement"]
     assert statement_field
     assert get_origin(statement_field.annotation) is list
@@ -561,6 +608,8 @@ def test_relation_with_conjunction():
 
     class Factoid(Document):
         has_statements: Statement | Causes[Statement, Statement]
+
+    initialise()
 
     # Check that Factoid.Create has the has_statements field
     assert "has_statements" in Factoid.Create.model_fields
@@ -651,6 +700,8 @@ def test_relation_to_trait():
     class Statement(Document):
         thing_carried_out_by: Agent
 
+    initialise()
+
     thing_carried_out_by_field = Statement.Create.model_fields["thing_carried_out_by"]
     assert (
         thing_carried_out_by_field.annotation
@@ -672,6 +723,8 @@ def test_relation_to_embedded():
 
     class Statement(Document):
         date: Date
+
+    initialise()
 
     assert Date.Create.model_fields["when"].annotation is datetime.datetime
     assert Date.Create.model_fields["type"].annotation == Literal["Date"]
@@ -697,6 +750,8 @@ def test_annotated_value():
     class Naming(Document):
         name: WithCertainty[str]
 
+    initialise()
+
     assert WithCertainty[str].model_fields["value"].annotation is str
 
     assert Naming.Create.model_fields["name"].annotation == WithCertainty[str]
@@ -718,6 +773,8 @@ def test_db_field_not_in_create_model():
 
     class Date(Embedded):
         pass
+
+    initialise()
 
     assert "some_field" in Statement.Create.model_fields
     assert "db_int_field" not in Statement.Create.model_fields
@@ -749,6 +806,8 @@ def test_inherited_from_fulfils_is_optional():
     class Place(Entity):
         pass
 
+    initialise()
+
     assert (
         Activity.Create.model_fields["person_responsible"].annotation
         is Person.ReferenceSet
@@ -776,6 +835,8 @@ def test_create_model_with_field_binding():
                 ]
             ),
         ]
+
+    initialise()
 
     action_model = Statement.Create.model_fields["action"].annotation
     assert isclass(action_model) and issubclass(action_model, Action.Create)
@@ -809,6 +870,8 @@ def test_create_model_with_field_binding_through_intermediate():
                 ]
             ),
         ]
+
+    initialise()
 
     negative_model = Statement.Create.model_fields["action"].annotation
     assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
@@ -865,6 +928,8 @@ def test_create_model_with_field_binding_through_intermediate_with_transform():
                 ]
             ),
         ]
+
+    initialise()
 
     negative_model = Statement.Create.model_fields["action"].annotation
     assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
@@ -930,6 +995,8 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type():
                 ]
             ),
         ]
+
+    initialise()
 
     negative_model = Statement.Create.model_fields["action"].annotation
     assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
@@ -1016,6 +1083,8 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type_does
                 ]
             ),
         ]
+
+    initialise()
 
     negative_model = Statement.Create.model_fields["action"].annotation
     assert isclass(negative_model) and issubclass(negative_model, Negative.Create)

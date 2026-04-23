@@ -36,3 +36,5 @@ class AnnotatedValue[T](_DeclaredClass, WithMeta[AnnotatedValueMeta]):
         cls._meta = cls.__dict__.get("_meta", AnnotatedValueMeta(_owner_class=cls))  # pyright: ignore[reportIncompatibleVariableOverride]
 
         cls._meta._owner_class = cls
+
+        cls._register()
