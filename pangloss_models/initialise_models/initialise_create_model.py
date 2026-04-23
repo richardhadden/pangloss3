@@ -285,6 +285,7 @@ def build_generic_create_model_from_type_option(
                     elif isinstance(to, RelationToDocument):
                         # Add edge to Document.Create and use
                         print("is rel to doc")
+                        initialise_create_model(to.annotated_type)
                         create_type = to.annotated_type.Create
 
                         if field_bindings:
@@ -442,6 +443,7 @@ def get_relation_annotation_types(
                     types.append(type_option.annotated_type.Create)
 
         elif isinstance(type_option, RelationToDocument):
+            initialise_create_model(type_option.annotated_type)
             if field_bindings:
                 create_model = build_bound_field_create_model(
                     type_option.annotated_type.Create, field_bindings

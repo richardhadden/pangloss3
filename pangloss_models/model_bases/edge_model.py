@@ -46,3 +46,5 @@ class EdgeModel(_DeclaredClass):
 
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
+
+        cls._register()

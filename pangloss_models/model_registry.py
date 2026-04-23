@@ -1,7 +1,11 @@
 import heapq
-from typing import ClassVar, get_args, get_origin
+from itertools import chain
+from typing import TYPE_CHECKING, ClassVar, get_args, get_origin
 
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    pass
 
 
 class ModelRegistry:
@@ -17,7 +21,7 @@ class ModelRegistry:
 
     @classmethod
     def _reset(cls):
-        print("RESETTING")
+
         cls._models = []
         cls._model_set = set()
 
@@ -30,12 +34,10 @@ class ModelRegistry:
 
     @classmethod
     def register(cls, model: type[BaseModel]) -> None:
-        print("registering", model)
+
         if model not in cls._model_set:
             cls._models.append(model)
             cls._model_set.add(model)
-
-        print(len(cls._model_set))
 
     @classmethod
     def all_models(cls) -> dict[str, type[BaseModel]]:
@@ -94,8 +96,9 @@ class ModelRegistry:
         deps |= cls._generic_deps(model)
         deps |= cls._annotation_deps(model)
 
+        model_set = set(cls._models)
         # Only keep registered models and avoid self-dependency
-        deps = {d for d in deps if d in cls._model_set and d is not model}
+        deps = {d for d in deps if d in model_set and d is not model}
 
         return sorted(deps, key=cls._model_key)
 
@@ -166,33 +169,17 @@ class ModelRegistry:
         for model in cls._models:
             model.model_rebuild(force=True, _types_namespace=namespace)
 
-        # --- Phase 2: dependency ordering ---
-        graph = cls._build_graph()
-        order, cyclic = cls._toposort(graph)
-
-        # --- Phase 3: initialise in order ---
-        for model in order:
-            # model.model_rebuild(force=True, _types_namespace=namespace)
-            cls._initialise_model(model)
-
-        # --- Phase 4: fallback for cycles ---
-        for model in cyclic:
-            # model.model_rebuild(force=True, _types_namespace=namespace)
-            cls._initialise_model(model)
-
-        return order
+        cls._initialise_models()
 
     # ----------------------------
     # Hook for your system
     # ----------------------------
 
     @classmethod
-    def _initialise_model(cls, model: type[BaseModel]):
+    def _initialise_models(cls):
         """
         Override or monkey-patch this.
         """
-
-        print("CALLING initialise model on", model.__name__)
 
         from pangloss_models.initialise_models.initialise_create_db_model import (
             add_fields_to_create_db_model,
@@ -200,6 +187,7 @@ class ModelRegistry:
         )
         from pangloss_models.initialise_models.initialise_create_model import (
             add_fields_to_create_model,
+            can_have_create_model,
             initialise_create_model,
         )
         from pangloss_models.initialise_models.initialise_field_definitions import (
@@ -210,15 +198,25 @@ class ModelRegistry:
             initialise_reference_view_model,
         )
 
-        initialise_field_definitions(model)
+        graph = cls._build_graph()
+        order, cyclic = cls._toposort(graph)
 
-        initialise_reference_set_model(model)
-        initialise_reference_view_model(model)
+        for model in chain(order, reversed(order)):
+            # model.model_rebuild(force=True, _types_namespace=namespace)
+            try:
+                initialise_field_definitions(model)
+            except:
+                pass
 
-        initialise_create_model(model)
+        for model in chain(order, cyclic):
+            initialise_reference_set_model(model)
+            initialise_reference_view_model(model)
 
-        add_fields_to_create_model(model.Create, [])
+        for model in chain(order, cyclic):
+            if can_have_create_model(model):
+                initialise_create_model(model)
+                add_fields_to_create_model(model.Create, [])
 
-        initialise_create_db_model(model)
+            initialise_create_db_model(model)
 
-        add_fields_to_create_db_model(model)
+            add_fields_to_create_db_model(model)

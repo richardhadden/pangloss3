@@ -44,7 +44,7 @@ class SemanticSpace[TContents](_DeclaredClass):
     contents: list[TContents]
 
     @classmethod
-    def initialise_meta(cls, **kwargs) -> None:
+    def __pydantic_init_subclass__(cls, **_):
 
         # Set model it uninitialised, as may inherit _initialised from parent class
         cls._initialised = False
@@ -54,3 +54,5 @@ class SemanticSpace[TContents](_DeclaredClass):
 
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
+
+        cls._register()

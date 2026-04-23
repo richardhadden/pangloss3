@@ -17,7 +17,7 @@ from pangloss_models.field_definitions import (
     RelationToGeneric,
     RelationToTypeVar,
 )
-from pangloss_models.model_bases.base_models import _CreateBase, _DeclaredClass
+from pangloss_models.model_bases.base_models import _CreateDBBase, _DeclaredClass
 from pangloss_models.model_bases.conjunction import (
     Conjunction,
     _ConjunctionCreateDBBase,
@@ -130,7 +130,7 @@ def get_create_db_base_model_type(
         | Conjunction
         | SemanticSpace
     ],
-) -> type[_CreateBase] | None:
+) -> type[_CreateDBBase] | None:
     if issubclass(model, Document):
         return _DocumentCreateDBBase
     elif issubclass(model, Entity):
@@ -278,12 +278,15 @@ def build_generic_create_db_model_from_type_option(
                         else:
                             # ... otherwise, just add the annotated_type.ReferenceSet
                             annotations.append(to.annotated_type.ReferenceSet)
+
                             if to.annotated_type._meta.create_inline:
+                                initialise_create_db_model(to.annotated_type)
                                 annotations.append(to.annotated_type.CreateDB)
 
                     # If relation to Document...
                     elif isinstance(to, RelationToDocument):
                         # Add edge to Document.CreateDB and use
+                        initialise_create_db_model(to.annotated_type)
                         if to.edge_model:
                             annotations.append(
                                 to.annotated_type.CreateDB.apply_edge_model(
@@ -310,6 +313,7 @@ def build_generic_create_db_model_from_type_option(
             if isinstance(generic_type_option, RelationToEntity):
                 # ... if there is an edge model, add the applied_edge_model
                 # version of annotated_type.ReferenceSet to annotation
+                initialise_create_db_model(generic_type_option.annotated_type)
                 if generic_type_option.edge_model:
                     annotations.append(
                         generic_type_option.annotated_type.ReferenceSet.apply_edge_model(
@@ -323,6 +327,7 @@ def build_generic_create_db_model_from_type_option(
                             )
                         )
                 else:
+                    initialise_create_db_model(generic_type_option.annotated_type)
                     # ... otherwise, just add the annotated_type.ReferenceSet
                     annotations.append(generic_type_option.annotated_type.ReferenceSet)
                     if generic_type_option.annotated_type._meta.create_inline:
@@ -330,6 +335,7 @@ def build_generic_create_db_model_from_type_option(
 
             # If relation to Document...
             elif isinstance(generic_type_option, RelationToDocument):
+                initialise_create_db_model(generic_type_option.annotated_type)
                 # Add edge to Document.CreateDB and use
                 if generic_type_option.edge_model:
                     annotations.append(
@@ -432,6 +438,9 @@ def add_fields_to_create_db_model(
         | SemanticSpace
     ],
 ) -> None:
+    if not can_have_create_db_model(model):
+        return
+
     # Literal fields
     for field_name, field_definition in model._meta.fields.literal_fields.items():
         model.CreateDB.model_fields[field_name] = FieldInfo(

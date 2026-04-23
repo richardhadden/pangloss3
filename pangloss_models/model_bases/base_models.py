@@ -45,46 +45,11 @@ class _DeclaredClass(_BaseObject):
     _meta: ClassVar[DeclaredClassMeta]
     _depends_on_classes: ClassVar[set[type[_DeclaredClass]]] = PrivateAttr()
 
-    def __init_subclass__(cls):
-        if (
-            cls is not _DeclaredClass
-            and cls
-            not in {
-                *_DeclaredClass.__subclasses__(),
-            }
-            and cls.__name__ not in {"Trait", "NonHeritableTrait"}
-        ):
-            print("REGISTERING", cls)
-            ModelRegistry.register(cls)
-        return super().__init_subclass__()
-
     @classmethod
-    def __pydantic_init_subclass__(cls, **_):
+    def _register(cls):
         cls._depends_on_classes = set()
 
-    @classmethod
-    def __initialise__(cls):
-        cls._initialised = True
-
-    """
-    @classmethod
-    def __pydantic_on_complete__(cls) -> None:
-
-        try:
-            pass
-            ModelRegistry.finalise()
-
-        except Exception as e:
-            print("Error finalising: error::", e.args, type(e))
-            print(traceback.print_exc())
-            pass
-
-        return super().__pydantic_on_complete__()
-    """
-
-    @classmethod
-    def initialise_meta(cls):
-        pass
+        ModelRegistry.register(cls)
 
 
 class MetaGetter[T: type[_ActionClass]]:

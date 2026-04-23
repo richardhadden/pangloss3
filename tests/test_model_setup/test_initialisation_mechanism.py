@@ -1,3 +1,4 @@
+from pangloss_models import initialise
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.semantic_space import SemanticSpace
 from pangloss_models.model_registry import ModelRegistry
@@ -19,7 +20,7 @@ def test_initialisation_of_referenced_model():
     class Statement(Document):
         title: str
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert "Factoid" in ModelRegistry.all_models()
     assert "Statement" in ModelRegistry.all_models()
@@ -42,7 +43,7 @@ def test_initialisation_of_referenced_model_reverse_order():
     class Factoid(Document):
         statements: Statement
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert "Factoid" in ModelRegistry.all_models()
     assert "Statement" in ModelRegistry.all_models()
@@ -73,7 +74,7 @@ def test_initialisation_of_random_ordered_declaration_1():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -103,7 +104,7 @@ def test_initialisation_interleaved_order():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -131,7 +132,7 @@ def test_initialisation_interleaved_order_1():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -159,7 +160,7 @@ def test_initialisation_interleaved_order_2():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -187,7 +188,7 @@ def test_initialisation_interleaved_order_3():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -215,7 +216,7 @@ def test_initialisation_interleaved_order_4():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -243,7 +244,7 @@ def test_initialisation_interleaved_order_5():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -271,7 +272,7 @@ def test_initialisation_interleaved_order_6():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -299,7 +300,7 @@ def test_initialisation_interleaved_order_7():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -327,7 +328,7 @@ def test_initialisation_interleaved_order_8():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -355,7 +356,7 @@ def test_initialisation_interleaved_order_9():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -383,7 +384,7 @@ def test_initialisation_interleaved_order_10():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -411,7 +412,7 @@ def test_initialisation_interleaved_order_11():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -439,7 +440,7 @@ def test_initialisation_interleaved_order_12():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -467,7 +468,7 @@ def test_initialisation_interleaved_order_13():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -495,7 +496,7 @@ def test_initialisation_interleaved_order_14():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -523,7 +524,7 @@ def test_initialisation_interleaved_order_15():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -551,7 +552,7 @@ def test_initialisation_interleaved_order_16():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -579,7 +580,7 @@ def test_initialisation_interleaved_order_17():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -607,7 +608,7 @@ def test_initialisation_interleaved_order_18():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -635,7 +636,7 @@ def test_initialisation_interleaved_order_19():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -663,7 +664,7 @@ def test_initialisation_interleaved_order_20():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -691,7 +692,7 @@ def test_initialisation_interleaved_order_21():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -719,7 +720,7 @@ def test_initialisation_interleaved_order_22():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -747,7 +748,7 @@ def test_initialisation_interleaved_order_23():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -775,7 +776,7 @@ def test_initialisation_interleaved_order_24():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -803,7 +804,7 @@ def test_initialisation_interleaved_order_25():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -831,7 +832,7 @@ def test_initialisation_interleaved_order_26():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -859,7 +860,7 @@ def test_initialisation_interleaved_order_27():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -887,7 +888,7 @@ def test_initialisation_interleaved_order_28():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -915,7 +916,7 @@ def test_initialisation_interleaved_order_29():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -943,7 +944,7 @@ def test_initialisation_interleaved_order_30():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -971,7 +972,7 @@ def test_initialisation_interleaved_order_31():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -999,7 +1000,7 @@ def test_initialisation_interleaved_order_32():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1027,7 +1028,7 @@ def test_initialisation_interleaved_order_33():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1055,7 +1056,7 @@ def test_initialisation_interleaved_order_34():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1083,7 +1084,7 @@ def test_initialisation_interleaved_order_35():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1111,7 +1112,7 @@ def test_initialisation_interleaved_order_36():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1139,7 +1140,7 @@ def test_initialisation_interleaved_order_37():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1167,7 +1168,7 @@ def test_initialisation_interleaved_order_38():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1195,7 +1196,7 @@ def test_initialisation_interleaved_order_39():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1223,7 +1224,7 @@ def test_initialisation_interleaved_order_40():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1251,7 +1252,7 @@ def test_initialisation_interleaved_order_41():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1279,7 +1280,7 @@ def test_initialisation_interleaved_order_42():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1307,7 +1308,7 @@ def test_initialisation_interleaved_order_43():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1335,7 +1336,7 @@ def test_initialisation_interleaved_order_44():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1363,7 +1364,7 @@ def test_initialisation_interleaved_order_45():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1391,7 +1392,7 @@ def test_initialisation_interleaved_order_46():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1419,7 +1420,7 @@ def test_initialisation_interleaved_order_47():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1447,7 +1448,7 @@ def test_initialisation_interleaved_order_48():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1475,7 +1476,7 @@ def test_initialisation_interleaved_order_49():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1503,7 +1504,7 @@ def test_initialisation_interleaved_order_50():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1531,7 +1532,7 @@ def test_initialisation_interleaved_order_51():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1559,7 +1560,7 @@ def test_initialisation_interleaved_order_52():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1587,7 +1588,7 @@ def test_initialisation_interleaved_order_53():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1615,7 +1616,7 @@ def test_initialisation_interleaved_order_54():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1643,7 +1644,7 @@ def test_initialisation_interleaved_order_55():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1671,7 +1672,7 @@ def test_initialisation_interleaved_order_56():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1699,7 +1700,7 @@ def test_initialisation_interleaved_order_57():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1727,7 +1728,7 @@ def test_initialisation_interleaved_order_58():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1755,7 +1756,7 @@ def test_initialisation_interleaved_order_59():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1783,7 +1784,7 @@ def test_initialisation_interleaved_order_60():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1811,7 +1812,7 @@ def test_initialisation_interleaved_order_61():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1839,7 +1840,7 @@ def test_initialisation_interleaved_order_62():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1867,7 +1868,7 @@ def test_initialisation_interleaved_order_63():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1895,7 +1896,7 @@ def test_initialisation_interleaved_order_64():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1923,7 +1924,7 @@ def test_initialisation_interleaved_order_65():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1951,7 +1952,7 @@ def test_initialisation_interleaved_order_66():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -1979,7 +1980,7 @@ def test_initialisation_interleaved_order_67():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2007,7 +2008,7 @@ def test_initialisation_interleaved_order_68():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2035,7 +2036,7 @@ def test_initialisation_interleaved_order_69():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2063,7 +2064,7 @@ def test_initialisation_interleaved_order_70():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2091,7 +2092,7 @@ def test_initialisation_interleaved_order_71():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2119,7 +2120,7 @@ def test_initialisation_interleaved_order_72():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2147,7 +2148,7 @@ def test_initialisation_interleaved_order_73():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2175,7 +2176,7 @@ def test_initialisation_interleaved_order_74():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2203,7 +2204,7 @@ def test_initialisation_interleaved_order_75():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2231,7 +2232,7 @@ def test_initialisation_interleaved_order_76():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2259,7 +2260,7 @@ def test_initialisation_interleaved_order_77():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2287,7 +2288,7 @@ def test_initialisation_interleaved_order_78():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2315,7 +2316,7 @@ def test_initialisation_interleaved_order_79():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2343,7 +2344,7 @@ def test_initialisation_interleaved_order_80():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2371,7 +2372,7 @@ def test_initialisation_interleaved_order_81():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2399,7 +2400,7 @@ def test_initialisation_interleaved_order_82():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2427,7 +2428,7 @@ def test_initialisation_interleaved_order_83():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2455,7 +2456,7 @@ def test_initialisation_interleaved_order_84():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2483,7 +2484,7 @@ def test_initialisation_interleaved_order_85():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2511,7 +2512,7 @@ def test_initialisation_interleaved_order_86():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2539,7 +2540,7 @@ def test_initialisation_interleaved_order_87():
     class Action(Document):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2567,7 +2568,7 @@ def test_initialisation_interleaved_order_88():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2595,7 +2596,7 @@ def test_initialisation_interleaved_order_89():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2623,7 +2624,7 @@ def test_initialisation_interleaved_order_90():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2651,7 +2652,7 @@ def test_initialisation_interleaved_order_91():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2679,7 +2680,7 @@ def test_initialisation_interleaved_order_92():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2707,7 +2708,7 @@ def test_initialisation_interleaved_order_93():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2735,7 +2736,7 @@ def test_initialisation_interleaved_order_94():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2763,7 +2764,7 @@ def test_initialisation_interleaved_order_95():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2791,7 +2792,7 @@ def test_initialisation_interleaved_order_96():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2819,7 +2820,7 @@ def test_initialisation_interleaved_order_97():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2847,7 +2848,7 @@ def test_initialisation_interleaved_order_98():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2875,7 +2876,7 @@ def test_initialisation_interleaved_order_99():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2903,7 +2904,7 @@ def test_initialisation_interleaved_order_100():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2931,7 +2932,7 @@ def test_initialisation_interleaved_order_101():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2959,7 +2960,7 @@ def test_initialisation_interleaved_order_102():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -2987,7 +2988,7 @@ def test_initialisation_interleaved_order_103():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3015,7 +3016,7 @@ def test_initialisation_interleaved_order_104():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3043,7 +3044,7 @@ def test_initialisation_interleaved_order_105():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3071,7 +3072,7 @@ def test_initialisation_interleaved_order_106():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3099,7 +3100,7 @@ def test_initialisation_interleaved_order_107():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3127,7 +3128,7 @@ def test_initialisation_interleaved_order_108():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3155,7 +3156,7 @@ def test_initialisation_interleaved_order_109():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3183,7 +3184,7 @@ def test_initialisation_interleaved_order_110():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3211,7 +3212,7 @@ def test_initialisation_interleaved_order_111():
     class Order(Document):
         thing_ordered: Subjunctive[Action]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3239,7 +3240,7 @@ def test_initialisation_interleaved_order_112():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3267,7 +3268,7 @@ def test_initialisation_interleaved_order_113():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3295,7 +3296,7 @@ def test_initialisation_interleaved_order_114():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3323,7 +3324,7 @@ def test_initialisation_interleaved_order_115():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3351,7 +3352,7 @@ def test_initialisation_interleaved_order_116():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3379,7 +3380,7 @@ def test_initialisation_interleaved_order_117():
     class Subjunctive[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3407,7 +3408,7 @@ def test_initialisation_interleaved_order_118():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3435,7 +3436,7 @@ def test_initialisation_interleaved_order_119():
     class Factoid(Document):
         statements: list[Negative[Order]]
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 
@@ -3463,7 +3464,7 @@ def test_initialisation_interleaved_order_120():
     class Negative[T](SemanticSpace[T]):
         pass
 
-    ModelRegistry.finalise()
+    initialise()
 
     assert Factoid._meta.fields["statements"]
 

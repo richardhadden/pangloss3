@@ -60,6 +60,8 @@ class ReifiedRelation[TTarget](_DeclaredClass):
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
 
+        cls._register()
+
 
 class ReifiedRelationDocumentMeta(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -117,3 +119,5 @@ class ReifiedRelationDocument[TTarget](_DeclaredClass):
 
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
+
+        cls._register()

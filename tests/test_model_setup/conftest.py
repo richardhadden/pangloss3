@@ -7,3 +7,4 @@ from pangloss_models.model_registry import ModelRegistry
 def reset_model_registry():
 
     ModelRegistry._reset()
+    yield

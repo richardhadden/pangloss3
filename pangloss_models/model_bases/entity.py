@@ -93,7 +93,7 @@ class Entity(_DeclaredClass, WithMeta[EntityMeta]):
     ReferenceView: ClassVar[type[_EntityReferenceView]]
 
     @classmethod
-    def initialise_meta(cls, **kwargs) -> None:
+    def __pydantic_init_subclass__(cls, **_):
 
         cls._initialised = False
 
@@ -101,6 +101,4 @@ class Entity(_DeclaredClass, WithMeta[EntityMeta]):
 
         cls._meta._owner_class = cls
 
-    @classmethod
-    def __pangloss_post_init__(cls):
-        pass
+        cls._register()

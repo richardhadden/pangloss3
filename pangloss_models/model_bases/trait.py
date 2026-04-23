@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Self
+from typing import Any, ClassVar
 
 from pydantic import ConfigDict, Field
 from pydantic_meta_kit import BaseMeta, InheritValue
@@ -27,7 +27,6 @@ class TraitMeta[T: Trait | NonHeritableTrait](BaseMeta, DeclaredClassMeta):
 
 
 class _Trait(_DeclaredClass):
-    # _trait_meta: ClassVar[TraitMeta]
     pass
 
 
@@ -42,9 +41,11 @@ class Trait[T: Document | Entity](_Trait):
         cls._initialised = False
 
         # Make sure _meta class is new and not inherited
-        cls._meta = TraitMeta[Self]()
+        cls._meta = cls.__dict__.get("_meta", TraitMeta())
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
+
+        cls._register()
 
 
 class NonHeritableTrait(_Trait):
@@ -61,3 +62,5 @@ class NonHeritableTrait(_Trait):
 
         # Set owner class on cls._meta
         cls._meta._owner_class = cls  # pyright: ignore[reportAttributeAccessIssue]
+
+        cls._register()

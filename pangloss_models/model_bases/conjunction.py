@@ -51,3 +51,5 @@ class Conjunction(_DeclaredClass, WithMeta[ConjunctionMeta]):
 
         # Set owner class on cls._meta
         cls._meta._owner_class = cls
+
+        cls._register()
