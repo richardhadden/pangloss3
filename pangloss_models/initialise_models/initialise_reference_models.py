@@ -11,7 +11,10 @@ from pangloss_models.exceptions import PanglossModelError
 from pangloss_models.model_bases.base_models import _DeclaredClass
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.entity import Entity
-from pangloss_models.model_bases.reified_relation import ReifiedRelationDocument
+from pangloss_models.model_bases.reified_relation import (
+    ReifiedRelation,
+    ReifiedRelationDocument,
+)
 
 
 def initialise_reference_set_model(model: type[_DeclaredClass]):
@@ -76,12 +79,14 @@ def initialise_reference_view_model(model: type[_DeclaredClass]):
 
     id_type = UUID
 
-    if issubclass(model, ReifiedRelationDocument) and (
+    if issubclass(model, (ReifiedRelation, ReifiedRelationDocument)) and (
         origin := model.__pydantic_generic_metadata__["origin"]
     ):
         type_name = origin.__name__
     else:
         type_name = model.__name__
+
+    print(model.__name__)
 
     model.ReferenceView = pydantic_create_model(
         f"{model.__name__}ReferenceView",

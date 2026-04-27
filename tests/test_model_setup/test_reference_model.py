@@ -229,7 +229,7 @@ def test_reference_view_on_reified_relation_document_via_edge_model():
 
     assert (
         InPlace[Person].ReferenceView._via.Certainty.__name__
-        == "InPlace[Person]ReferenceViewViaCertainty"
+        == "InPlaceReferenceViewViaCertainty"
     )
 
     assert issubclass(in_place_with_edge_model, InPlace[Person].ReferenceView)

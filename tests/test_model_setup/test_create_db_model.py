@@ -297,6 +297,8 @@ def test_add_simple_relation_from_document_to_entity_with_list_wrapper():
     class Person(Entity):
         pass
 
+    initialise()
+
     assert Statement.CreateDB
     assert Statement.CreateDB.model_fields["was_carried_out_by"]
     annotation = Statement.CreateDB.model_fields["was_carried_out_by"].annotation
@@ -589,7 +591,7 @@ def test_relation_with_semantic_space():
 
     assert f.label == "A Factoid"
     assert f.has_statement[0].type == "Negative"
-    print(type(f.has_statement[0]))
+
     assert isinstance(f.has_statement[0], Negative.CreateDB)
     assert f.has_statement[0].contents[0].type == "Statement"
     assert isinstance(f.has_statement[0].contents[0], Statement.CreateDB)

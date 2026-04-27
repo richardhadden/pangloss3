@@ -384,6 +384,7 @@ def get_relation_annotation_types(
                     types.append(type_option.annotated_type.CreateDB)
 
         elif isinstance(type_option, RelationToDocument):
+            initialise_create_db_model(type_option.annotated_type)
             if type_option.edge_model:
                 types.append(
                     type_option.annotated_type.CreateDB.apply_edge_model(

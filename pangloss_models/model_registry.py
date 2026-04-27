@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, ClassVar, get_args, get_origin
 
 from pydantic import BaseModel
 
-from pangloss_models.exceptions import PanglossModelError
+from pangloss_models.exceptions import PanglossInitialisationError, PanglossModelError
 
 if TYPE_CHECKING:
     from pangloss_models.model_bases.base_models import _DeclaredClass
@@ -16,10 +16,20 @@ class ModelRegistry:
 
     Responsibilities:
     - Register models
-    - Build dependency graph (explicit + inferred)
+    - Build dependency graph
     - Provide stable topological ordering
-    - Finalise models (pydantic rebuild + user init hook)
+    - Finalise models (pydantic rebuild + model initialisation procedure)
     """
+
+    def __init__(self):
+        raise PanglossInitialisationError(
+            "ModelRegistry cannot be initialised or subclassed"
+        )
+
+    def __init_subclass__(cls) -> None:
+        raise PanglossInitialisationError(
+            "ModelRegistry cannot be initialised or subclassed"
+        )
 
     @classmethod
     def _reset(cls):
@@ -28,16 +38,16 @@ class ModelRegistry:
         cls._model_set = set()
         cls._model_dict = {}
 
-    _models: ClassVar[list[type[BaseModel]]] = []
-    _model_set: ClassVar[set[type[BaseModel]]] = set()
-    _model_dict = dict()
+    _models: ClassVar[list[type[_DeclaredClass]]] = []
+    _model_set: ClassVar[set[type[_DeclaredClass]]] = set()
+    _model_dict: ClassVar[dict[str, type[_DeclaredClass]]] = dict()
 
     # ----------------------------
     # Registration
     # ----------------------------
 
     @classmethod
-    def register(cls, model: type[BaseModel]) -> None:
+    def register(cls, model: type[_DeclaredClass]) -> None:
 
         if model not in cls._model_set:
             cls._models.append(model)
@@ -45,7 +55,7 @@ class ModelRegistry:
             cls._model_dict[model.__name__] = model
 
     @classmethod
-    def all_models(cls) -> dict[str, type[BaseModel]]:
+    def all_models(cls) -> dict[str, type[_DeclaredClass]]:
         return {m.__name__: m for m in cls._models}
 
     # ----------------------------
@@ -53,11 +63,11 @@ class ModelRegistry:
     # ----------------------------
 
     @classmethod
-    def _explicit_deps(cls, model: type[BaseModel]) -> set[type[BaseModel]]:
+    def _explicit_deps(cls, model: type[_DeclaredClass]) -> set[type[_DeclaredClass]]:
         return set(getattr(model, "__depends_on__", []))
 
     @classmethod
-    def _generic_deps(cls, model: type[_DeclaredClass]) -> set[type[BaseModel]]:
+    def _generic_deps(cls, model: type[_DeclaredClass]) -> set[type[_DeclaredClass]]:
         from pangloss_models.utils import get_parent_class
 
         deps = set()
@@ -72,7 +82,7 @@ class ModelRegistry:
         return deps
 
     @classmethod
-    def _annotation_deps(cls, model: type[BaseModel]) -> set[type[BaseModel]]:
+    def _annotation_deps(cls, model: type[_DeclaredClass]) -> set[type[_DeclaredClass]]:
         """
         Optional light inference:
         Extract BaseModel types from annotations.
@@ -97,7 +107,9 @@ class ModelRegistry:
         return deps
 
     @classmethod
-    def _model_dependencies(cls, model: type[BaseModel]) -> list[type[BaseModel]]:
+    def _model_dependencies(
+        cls, model: type[_DeclaredClass]
+    ) -> list[type[_DeclaredClass]]:
         deps = set()
 
         deps |= cls._explicit_deps(model)
@@ -115,11 +127,11 @@ class ModelRegistry:
     # ----------------------------
 
     @classmethod
-    def _model_key(cls, model: type[BaseModel]) -> str:
+    def _model_key(cls, model: type[_DeclaredClass]) -> str:
         return f"{model.__module__}.{model.__qualname__}"
 
     @classmethod
-    def _build_graph(cls) -> dict[type[BaseModel], list[type[BaseModel]]]:
+    def _build_graph(cls) -> dict[type[_DeclaredClass], list[type[_DeclaredClass]]]:
         graph = {}
 
         for model in sorted(cls._models, key=cls._model_key):
@@ -209,20 +221,21 @@ class ModelRegistry:
         graph = cls._build_graph()
         order, cyclic = cls._toposort(graph)
 
+        # To initialise field definitions, we need to initialise in
+        # declaration order
         for model in cls._model_dict.values():
-            # model.model_rebuild(force=True, _types_namespace=namespace)
             try:
                 initialise_field_definitions(model)
             except PanglossModelError as e:
                 raise e
-            except Exception:
-                break
+            except Exception as e:
+                print(f"Exception on init fields of model {model.__name__}", e)
 
-        for model in chain(order):
+        for model in chain(order, cyclic):
             initialise_reference_set_model(model)
             initialise_reference_view_model(model)
 
-        for model in chain(order, cyclic):
+        for model in chain(cyclic, order, cyclic):
             if can_have_create_model(model):
                 initialise_create_model(model)
                 add_fields_to_create_model(model.Create, [])
