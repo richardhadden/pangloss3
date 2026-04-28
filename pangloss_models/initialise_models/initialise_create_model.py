@@ -2,6 +2,8 @@ from types import UnionType
 from typing import Annotated, ClassVar, Literal, TypeVar, Union, cast
 from uuid import UUID
 
+import annotated_types
+from annotated_types import BaseMetadata
 from frozendict import frozendict
 from pydantic import AnyHttpUrl, ConfigDict, Field, model_validator
 from pydantic import create_model as pydantic_create_model
@@ -505,6 +507,29 @@ def field_has_inherited_field_bindings(
     return False
 
 
+def map_validators_to_kwargs(validators: list[BaseMetadata]):
+    validator_dict = {}
+    for validator in validators:
+        match validator:
+            case annotated_types.Gt(v):
+                validator_dict["gt"] = v
+            case annotated_types.Ge(v):
+                validator_dict["ge"] = v
+            case annotated_types.Lt(v):
+                validator_dict["lt"] = v
+            case annotated_types.Le(v):
+                validator_dict["le"] = v
+            case annotated_types.MultipleOf(v):
+                validator_dict["multiple_of"] = v
+            case annotated_types.MinLen(v):
+                validator_dict["min_length"] = v
+            case annotated_types.MaxLen(v):
+                validator_dict["max_length"] = v
+            case _:
+                pass
+    return validator_dict
+
+
 def add_fields_to_create_model(
     model: type[
         _DocumentCreateBase
@@ -533,7 +558,7 @@ def add_fields_to_create_model(
         model.model_fields[field_name] = FieldInfo(
             annotation=annotation,
             validation_alias=to_camel(field_name),
-            metadata=field_definition.validators,  # type: ignore
+            **map_validators_to_kwargs(field_definition.validators),
         )
         if has_inherited_bindings:
             model.model_fields[field_name].default = None
@@ -590,9 +615,10 @@ def add_fields_to_create_model(
             model.model_fields[field_name] = FieldInfo(
                 annotation=annotation,  # type: ignore
                 validation_alias=to_camel(field_name),
-                metadata=field_definition.validators,  # type: ignore
                 discriminator="type" if not field_definition.wrapper else None,
+                **map_validators_to_kwargs(field_definition.validators),
             )
+
             if field_optional:
                 model.model_fields[field_name].default = None
 

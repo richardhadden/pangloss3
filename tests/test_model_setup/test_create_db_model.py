@@ -983,7 +983,7 @@ def test_document_create_db_in_semantic_spaces_propagated():
         pass
 
     class Factoid(Document):
-        statements: list[Negative[Order]]
+        statements: list[Order | Negative[Order]]
 
     class Action(Document):
         pass
@@ -997,3 +997,24 @@ def test_document_create_db_in_semantic_spaces_propagated():
     initialise()
 
     assert Factoid.Create
+
+    factoid = Factoid.Create(
+        **{
+            "label": "A Factoid",
+            "statements": [
+                {
+                    "type": "Negative",
+                    "contents": [
+                        {
+                            "type": "Order",
+                            "label": "An Order",
+                            "thing_ordered": {
+                                "type": "Subjunctive",
+                                "contents": [{"type": "Action", "label": "An Action"}],
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+    )

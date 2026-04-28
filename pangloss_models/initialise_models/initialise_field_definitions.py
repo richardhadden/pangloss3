@@ -53,6 +53,7 @@ from pangloss_models.model_bases.semantic_space import SemanticSpace
 from pangloss_models.model_bases.trait import NonHeritableTrait, Trait
 from pangloss_models.utils import (
     extract_relation_config,
+    extract_validators,
     flatten,
     get_all_parent_classes,
     get_concrete_types,
@@ -285,6 +286,8 @@ def build_relatable_field_definition(
 
     relation_config = extract_relation_config(field_info)
 
+    validators = extract_validators(field_info)
+
     if relation_config:
         field_subclassings = set(relation_config.subclasses_parent_fields)
     else:
@@ -318,6 +321,7 @@ def build_relatable_field_definition(
             wrapper=list,
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
+            validators=validators,
         )
     elif isinstance(field_info.annotation, TypeVar):
         return RelationFieldDefinition(
@@ -337,6 +341,7 @@ def build_relatable_field_definition(
             wrapper=None,
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
+            validators=validators,
         )
 
     elif is_list_relatable(field_info.annotation):
@@ -363,6 +368,7 @@ def build_relatable_field_definition(
             wrapper=list,
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
+            validators=validators,
         )
 
     else:
@@ -388,6 +394,7 @@ def build_relatable_field_definition(
             wrapper=None,
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
+            validators=validators,
         )
 
 

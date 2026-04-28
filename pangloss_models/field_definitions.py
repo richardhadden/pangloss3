@@ -64,7 +64,7 @@ class LiteralFieldDefinition(FieldDefinition):
 @dataclass(frozen=True, kw_only=True)
 class ListFieldDefinition(FieldDefinition):
     annotated_type: type[list[BaseTypes]]
-    validators: list[type[BaseMetadata]] = dataclass_field(default_factory=list)
+    validators: list[BaseMetadata] = dataclass_field(default_factory=list)
     inner_type: type[BaseTypes]
     inner_type_validators: list[BaseMetadata] = dataclass_field(default_factory=list)
 
@@ -157,7 +157,7 @@ class RelationFieldDefinition(FieldDefinition):
     reverse_name: str
     subclasses_parent_fields: set[str | FieldSubclassing]
     wrapper: type[list | tuple] | None = None
-    validators: list[type[BaseMetadata]] = dataclass_field(default_factory=list)
+    validators: list[BaseMetadata] = dataclass_field(default_factory=list)
     bind_to_child_field: list[FieldBinding] = dataclass_field(default_factory=list)
 
     @staticmethod

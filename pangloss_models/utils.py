@@ -16,6 +16,7 @@ from typing import (
     overload,
 )
 
+from annotated_types import BaseMetadata
 from pydantic import BaseModel
 from pydantic._internal._generics import PydanticGenericMetadata
 from pydantic.fields import FieldInfo
@@ -389,6 +390,20 @@ def extract_relation_config(field_info: FieldInfo) -> RelationConfig | None:
     for metadata_object in field_info.metadata:
         if isinstance(metadata_object, RelationConfig):
             return metadata_object
+
+
+def extract_validators(field_info: FieldInfo):
+
+    if not field_info.metadata:
+        return []
+
+    validators: list[BaseMetadata] = []
+    for metadata_object in field_info.metadata:
+        if isinstance(metadata_object, BaseMetadata):
+            validators.append(metadata_object)
+    if relation_config := extract_relation_config(field_info):
+        validators.extend(relation_config.validators)
+    return validators
 
 
 @cache
