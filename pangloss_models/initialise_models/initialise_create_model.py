@@ -2,8 +2,6 @@ from types import UnionType
 from typing import Annotated, ClassVar, Literal, TypeVar, Union, cast
 from uuid import UUID
 
-import annotated_types
-from annotated_types import BaseMetadata
 from frozendict import frozendict
 from pydantic import AnyHttpUrl, ConfigDict, Field, model_validator
 from pydantic import create_model as pydantic_create_model
@@ -38,6 +36,7 @@ from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateBase,
 )
+from pangloss_models.utils import map_validators_to_kwargs
 
 
 def check_create_and_id_present(self):
@@ -505,29 +504,6 @@ def field_has_inherited_field_bindings(
             return True
 
     return False
-
-
-def map_validators_to_kwargs(validators: list[BaseMetadata]):
-    validator_dict = {}
-    for validator in validators:
-        match validator:
-            case annotated_types.Gt(v):
-                validator_dict["gt"] = v
-            case annotated_types.Ge(v):
-                validator_dict["ge"] = v
-            case annotated_types.Lt(v):
-                validator_dict["lt"] = v
-            case annotated_types.Le(v):
-                validator_dict["le"] = v
-            case annotated_types.MultipleOf(v):
-                validator_dict["multiple_of"] = v
-            case annotated_types.MinLen(v):
-                validator_dict["min_length"] = v
-            case annotated_types.MaxLen(v):
-                validator_dict["max_length"] = v
-            case _:
-                pass
-    return validator_dict
 
 
 def add_fields_to_create_model(

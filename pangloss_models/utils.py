@@ -16,6 +16,7 @@ from typing import (
     overload,
 )
 
+import annotated_types
 from annotated_types import BaseMetadata
 from pydantic import BaseModel
 from pydantic._internal._generics import PydanticGenericMetadata
@@ -601,3 +602,26 @@ def annotation_is_optional(ann: Any) -> TypeIs[UnionType]:
         return NoneType in get_args(ann)
 
     return False
+
+
+def map_validators_to_kwargs(validators: list[BaseMetadata]):
+    validator_dict = {}
+    for validator in validators:
+        match validator:
+            case annotated_types.Gt(v):
+                validator_dict["gt"] = v
+            case annotated_types.Ge(v):
+                validator_dict["ge"] = v
+            case annotated_types.Lt(v):
+                validator_dict["lt"] = v
+            case annotated_types.Le(v):
+                validator_dict["le"] = v
+            case annotated_types.MultipleOf(v):
+                validator_dict["multiple_of"] = v
+            case annotated_types.MinLen(v):
+                validator_dict["min_length"] = v
+            case annotated_types.MaxLen(v):
+                validator_dict["max_length"] = v
+            case _:
+                pass
+    return validator_dict
