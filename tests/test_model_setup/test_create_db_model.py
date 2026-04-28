@@ -4,11 +4,17 @@ from typing import Annotated, Literal, get_args, get_origin, no_type_check
 from uuid import UUID, uuid7
 
 import pytest
+from annotated_types import Gt, MinLen
 from pydantic import AnyHttpUrl, ValidationError
 
 from pangloss_models import initialise
 from pangloss_models.exceptions import PanglossMetaError
-from pangloss_models.field_definitions import FieldSubclassing
+from pangloss_models.field_definitions import (
+    FieldSubclassing,
+    ListFieldDefinition,
+    LiteralFieldDefinition,
+    RelationFieldDefinition,
+)
 from pangloss_models.model_bases.annotated_value import AnnotatedValue
 from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.conjunction import (
@@ -1018,3 +1024,75 @@ def test_document_create_db_in_semantic_spaces_propagated():
             ],
         }
     )
+
+
+@no_type_check
+def test_relation_validator():
+    class Factoid(Document):
+        statements: Annotated[
+            list[Action],
+            MinLen(1),
+        ]
+
+    class Action(Document):
+        pass
+
+    initialise()
+
+    statements_field = Factoid._meta.fields["statements"]
+    assert isinstance(statements_field, RelationFieldDefinition)
+
+    assert statements_field.validators == [MinLen(1)]
+
+    assert Factoid.CreateDB.model_fields["statements"]
+    assert Factoid.CreateDB.model_fields["statements"].metadata == [MinLen(1)]
+
+    with pytest.raises(ValidationError):
+        Factoid.CreateDB(label="A Factoid", statements=[])
+
+
+@no_type_check
+def test_literal_validators():
+    class Factoid(Document):
+        number: Annotated[
+            int,
+            Gt(1),
+        ]
+
+    initialise()
+
+    statements_field = Factoid._meta.fields["number"]
+    assert isinstance(statements_field, LiteralFieldDefinition)
+
+    assert statements_field.validators == [Gt(1)]
+
+    assert Factoid.CreateDB.model_fields["number"]
+    assert Factoid.CreateDB.model_fields["number"].metadata == [Gt(1)]
+
+    with pytest.raises(ValidationError):
+        Factoid.CreateDB(label="A Factoid", number=1)
+
+
+@no_type_check
+def test_list_validators():
+    class Factoid(Document):
+        numbers: Annotated[list[Annotated[int, Gt(1)]], MinLen(1)]
+
+    initialise()
+
+    statements_field = Factoid._meta.fields["numbers"]
+    assert isinstance(statements_field, ListFieldDefinition)
+
+    assert statements_field.validators == [MinLen(1)]
+    assert statements_field.inner_type_validators == [Gt(1)]
+
+    assert Factoid.CreateDB.model_fields["numbers"]
+    assert Factoid.CreateDB.model_fields["numbers"].metadata == [MinLen(1)]
+
+    with pytest.raises(ValidationError):
+        Factoid.CreateDB(label="A Factoid", numbers=[])
+
+    with pytest.raises(ValidationError):
+        Factoid.Create(label="A Factoid", numbers=[1])
+
+    Factoid.CreateDB(label="A Factoid", numbers=[2, 2, 2])
