@@ -238,20 +238,17 @@ def build_generic_create_model_from_type_option(
     for field_name, field_info in generic_relation_type.Create.model_fields.items():
         bound_create_model.model_fields[field_name] = field_info
 
-    print("-----")
-    print(bound_create_model)
     # Now, go through all the relation fields on the Generic type
     for (
         field_name,
         field_definition,
     ) in generic_relation_type._meta.fields.relation_fields.items():
         # Initialise a list of possible annotations for this field
-        print(field_name)
+
         annotations = []
 
         # Iterate the type_options for this field
         for generic_type_option in field_definition.type_options:
-            print("GTO", generic_type_option)
             if isinstance(generic_type_option, RelationToTypeVar):
                 # Look up the actual type options based on the typevar name
                 for to in (
@@ -285,7 +282,7 @@ def build_generic_create_model_from_type_option(
                     # If relation to Document...
                     elif isinstance(to, RelationToDocument):
                         # Add edge to Document.Create and use
-                        print("is rel to doc")
+
                         initialise_create_model(to.annotated_type)
                         create_type = to.annotated_type.Create
 
@@ -341,7 +338,7 @@ def build_generic_create_model_from_type_option(
             # If relation to Document...
             elif isinstance(generic_type_option, RelationToDocument):
                 # Add edge to Document.Create and use
-                print("is rel to doc")
+
                 create_type = generic_type_option.annotated_type.Create
 
                 if field_bindings:

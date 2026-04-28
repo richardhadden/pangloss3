@@ -86,8 +86,6 @@ def initialise_reference_view_model(model: type[_DeclaredClass]):
     else:
         type_name = model.__name__
 
-    print(model.__name__)
-
     model.ReferenceView = pydantic_create_model(
         f"{model.__name__}ReferenceView",
         __base__=reference_view_base_type,

@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     PrivateAttr,
     create_model,
     model_validator,
@@ -186,7 +187,34 @@ class _CreateBase(_ActionClass):
         return self
 
 
+def recursively_propagate_semantic_space_types(
+    item: _CreateDBBase, semantic_spaces: list[str]
+):
+    from pangloss_models.model_bases.semantic_space import _SemanticSpaceCreateDBBase
+
+    if not isinstance(item, _SemanticSpaceCreateDBBase):
+        item.semantic_spaces = semantic_spaces
+
+    for field_name, field_definition in item._meta.fields.relation_fields.items():
+        if related_item := getattr(item, field_name, None):
+            if isinstance(related_item, list):
+                for ri in related_item:
+                    if isinstance(ri, _CreateDBBase):
+                        recursively_propagate_semantic_space_types(ri, semantic_spaces)
+
+            else:
+                if isinstance(related_item, _CreateDBBase):
+                    recursively_propagate_semantic_space_types(
+                        related_item, semantic_spaces
+                    )
+
+    return item
+
+
 class _CreateDBBase(_ActionClass):
+    _propagation_pass: bool = False
+    semantic_spaces: list[str] = Field(default_factory=list)
+
     def __init__(self, **kwargs):
 
         # Calling model_construct emits a warning that the data might not be valid,
@@ -204,6 +232,19 @@ class _CreateDBBase(_ActionClass):
                     super().__init__(**data.model_dump())
             else:
                 super().__init__(**kwargs)
+
+    @model_validator(mode="after")
+    def propagate_semantic_spaces_values(self) -> Self:
+        """Get any binding-fields for this model and try to bind
+        on nested objects"""
+        print("initing", self.type)
+        if self._propagation_pass:
+            # return self
+            return self
+
+        recursively_propagate_semantic_space_types(self, [])
+        self._propagation_pass = True
+        return self
 
 
 class _ViewBase(_ActionClass):

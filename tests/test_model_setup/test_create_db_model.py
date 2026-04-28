@@ -983,50 +983,6 @@ def test_entity_create_db_has_new_id_but_keeps_url_when_provided():
 
 
 @no_type_check
-def test_document_create_db_in_semantic_spaces_propagated():
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Factoid(Document):
-        statements: list[Order | Negative[Order]]
-
-    class Action(Document):
-        pass
-
-    class Order(Document):
-        thing_ordered: Subjunctive[Action]
-
-    class Subjunctive[T](SemanticSpace[T]):
-        pass
-
-    initialise()
-
-    assert Factoid.Create
-
-    factoid = Factoid.Create(
-        **{
-            "label": "A Factoid",
-            "statements": [
-                {
-                    "type": "Negative",
-                    "contents": [
-                        {
-                            "type": "Order",
-                            "label": "An Order",
-                            "thing_ordered": {
-                                "type": "Subjunctive",
-                                "contents": [{"type": "Action", "label": "An Action"}],
-                            },
-                        }
-                    ],
-                }
-            ],
-        }
-    )
-
-
-@no_type_check
 def test_relation_validator():
     class Factoid(Document):
         statements: Annotated[
@@ -1096,3 +1052,63 @@ def test_list_validators():
         Factoid.Create(label="A Factoid", numbers=[1])
 
     Factoid.CreateDB(label="A Factoid", numbers=[2, 2, 2])
+
+
+@no_type_check
+def test_document_create_db_in_semantic_spaces_propagated():
+
+    class Negative[T](SemanticSpace[T]):
+        pass
+
+    class Factoid(Document):
+        statements: list[Order | Negative[Order]]
+
+    class Action(Document):
+        pass
+
+    class Order(Document):
+        thing_ordered: Subjunctive[Action]
+
+    class Subjunctive[T](SemanticSpace[T]):
+        pass
+
+    initialise()
+
+    assert Factoid.CreateDB.model_fields["semantic_spaces"]
+
+    assert Factoid.Create
+
+    factoid = Factoid.Create(
+        **{
+            "label": "A Factoid",
+            "statements": [
+                {
+                    "type": "Negative",
+                    "contents": [
+                        {
+                            "type": "Order",
+                            "label": "An Order",
+                            "thing_ordered": {
+                                "type": "Subjunctive",
+                                "contents": [{"type": "Action", "label": "An Action"}],
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    factoid_db = factoid._to_db_model()
+    assert factoid_db.semantic_spaces == []
+    assert factoid_db.statements[0].type == "Negative"
+    assert factoid_db.statements[0].semantic_spaces == []
+    assert factoid_db.statements[0].contents[0].type == "Order"
+    assert factoid_db.statements[0].contents[0].semantic_spaces == ["Negative"]
+    assert factoid_db.statements[0].contents[0].thing_ordered.type == "Subjunctive"
+    assert (
+        factoid_db.statements[0].contents[0].thing_ordered.contents[0].type == "Action"
+    )
+    assert factoid_db.statements[0].contents[0].thing_ordered.contents[
+        0
+    ].semantic_spaces == ["Negative", "Subjunctive"]

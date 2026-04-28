@@ -529,7 +529,7 @@ def normalise_and_get_subclassed_fields(
                     origin_classes_and_definitions = (
                         get_field_origin_model_and_definition(model, field_subclassing)
                     )
-                    print(">>", origin_classes_and_definitions)
+
                     if not origin_classes_and_definitions:
                         raise PanglossModelError(
                             f"{model.__name__}.{field_name} is trying to subclass a field ('{field_subclassing}') that does not exist on a parent class"
