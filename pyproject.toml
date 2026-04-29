@@ -23,4 +23,6 @@ pydantic-meta-kit = { git = "https://github.com/richardhadden/pydantic-meta-kit.
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
+    "pytest-xdist>=3.8.0",
+    "python-lsp-server>=1.14.0",
 ]

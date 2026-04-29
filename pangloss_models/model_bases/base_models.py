@@ -167,7 +167,9 @@ def recursively_add_bound_field_values(
 
 class _CreateBase(_ActionClass):
     def _to_db_model(self):
-        return self._owner.CreateDB(**self.model_dump())  # type: ignore
+        db_model_instance = self._owner.CreateDB(**self.model_dump())  # type: ignore
+        recursively_propagate_semantic_space_types(db_model_instance, [])
+        return db_model_instance
 
     @model_validator(mode="after")
     def propagate_bound_values(self) -> Self:
@@ -193,7 +195,10 @@ def recursively_propagate_semantic_space_types(
     from pangloss_models.model_bases.semantic_space import _SemanticSpaceCreateDBBase
 
     if not isinstance(item, _SemanticSpaceCreateDBBase):
-        item.semantic_spaces = semantic_spaces
+        item.semantic_spaces = [*semantic_spaces]
+
+    if isinstance(item, _SemanticSpaceCreateDBBase):
+        semantic_spaces.append(getattr(item, "type"))
 
     for field_name, field_definition in item._meta.fields.relation_fields.items():
         if related_item := getattr(item, field_name, None):
@@ -237,12 +242,12 @@ class _CreateDBBase(_ActionClass):
     def propagate_semantic_spaces_values(self) -> Self:
         """Get any binding-fields for this model and try to bind
         on nested objects"""
-        print("initing", self.type)
+        # print("initing", getattr(self, "type", None))
         if self._propagation_pass:
             # return self
             return self
 
-        recursively_propagate_semantic_space_types(self, [])
+        # recursively_propagate_semantic_space_types(self, [])
         self._propagation_pass = True
         return self
 
