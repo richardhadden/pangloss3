@@ -47,7 +47,6 @@ class _DocumentCreateBase(_CreateBase):
 
 class _DocumentCreateDBBase(_CreateDBBase):
     id: UUID
-    in_semantic_spaces: list[str] = Field(default_factory=list)
     db_labels: set[str] = Field(default_factory=set)
 
     @model_validator(mode="before")
@@ -58,11 +57,11 @@ class _DocumentCreateDBBase(_CreateDBBase):
         return data
 
 
-class DocumentViewBase(_ViewBase):
+class _DocumentViewBase(_ViewBase):
     pass  # in_semantic_space: list[str] = Field(default_factory=list)
 
 
-class DocumentUpdateBase(_UpdateBase):
+class _DocumentUpdateBase(_UpdateBase):
     pass
 
 
@@ -84,8 +83,8 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
 
     Create: ClassVar[type[_DocumentCreateBase]]
     CreateDB: ClassVar[type[_DocumentCreateDBBase]]
-    View: ClassVar[type[DocumentViewBase]]
-    Update: ClassVar[type[DocumentUpdateBase]]
+    View: ClassVar[type[_DocumentViewBase]]
+    Update: ClassVar[type[_DocumentUpdateBase]]
 
     ReferenceView: ClassVar[type[DocumentReferenceViewBase]]
     ReferenceSetBase: ClassVar[type[DocumentReferenceSetBase]]

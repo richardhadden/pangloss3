@@ -13,6 +13,7 @@ from pangloss_models.model_bases.base_models import (
     _CreateBase,
     _CreateDBBase,
     _DeclaredClass,
+    _UpdateBase,
 )
 
 
@@ -36,11 +37,16 @@ class _EmbeddedCreateDBBase(_CreateDBBase):
     pass
 
 
+class _EmbeddedUpdateBase(_UpdateBase):
+    pass
+
+
 class Embedded(_DeclaredClass, WithMeta[EmbeddedMeta]):
     _meta: ClassVar[EmbeddedMeta] = EmbeddedMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_EmbeddedCreateBase]]
     CreateDB: ClassVar[type[_EmbeddedCreateDBBase]]
+    Update: ClassVar[type[_EmbeddedUpdateBase]]
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs) -> None:

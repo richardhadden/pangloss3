@@ -16,6 +16,7 @@ from pangloss_models.model_bases.base_models import (
     _DeclaredClass,
     _ReferenceSetBase,
     _ReferenceViewBase,
+    _UpdateBase,
 )
 
 
@@ -83,6 +84,10 @@ class _EntityReferenceView(_ReferenceViewBase):
     label: str
 
 
+class _EntityUpdateBase(_UpdateBase):
+    pass
+
+
 class Entity(_DeclaredClass, WithMeta[EntityMeta]):
     Meta: ClassVar[type[EntityMeta]] = EntityMeta
     _meta: ClassVar[EntityMeta] = EntityMeta(create_with_id=False)  # pyright: ignore[reportIncompatibleVariableOverride]
@@ -91,6 +96,7 @@ class Entity(_DeclaredClass, WithMeta[EntityMeta]):
     CreateDB: ClassVar[type[_EntityCreateDBBase]]
     ReferenceSet: ClassVar[type[_EntityReferenceSetBase]]
     ReferenceView: ClassVar[type[_EntityReferenceView]]
+    Update: ClassVar[type[_EntityUpdateBase]]
 
     @classmethod
     def __pydantic_init_subclass__(cls, **_):

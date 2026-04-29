@@ -217,6 +217,9 @@ class ModelRegistry:
             initialise_reference_set_model,
             initialise_reference_view_model,
         )
+        from pangloss_models.initialise_models.initialise_update_model import (
+            initialise_update_model,
+        )
 
         graph = cls._build_graph()
         order, cyclic = cls._toposort(graph)
@@ -243,3 +246,6 @@ class ModelRegistry:
             initialise_create_db_model(model)
 
             add_fields_to_create_db_model(model)
+
+        for model in chain(cyclic, order, cyclic):
+            initialise_update_model(model=model)

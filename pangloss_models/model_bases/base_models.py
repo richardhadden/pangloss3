@@ -247,3 +247,7 @@ class _ViewBase(_ActionClass):
 
 class _UpdateBase(_ActionClass):
     id: UUID
+
+
+class _UpdateDBBase(_ActionClass):
+    id: UUID
