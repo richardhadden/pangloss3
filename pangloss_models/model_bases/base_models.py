@@ -238,19 +238,6 @@ class _CreateDBBase(_ActionClass):
             else:
                 super().__init__(**kwargs)
 
-    @model_validator(mode="after")
-    def propagate_semantic_spaces_values(self) -> Self:
-        """Get any binding-fields for this model and try to bind
-        on nested objects"""
-        # print("initing", getattr(self, "type", None))
-        if self._propagation_pass:
-            # return self
-            return self
-
-        # recursively_propagate_semantic_space_types(self, [])
-        self._propagation_pass = True
-        return self
-
 
 class _ViewBase(_ActionClass):
     id: UUID
