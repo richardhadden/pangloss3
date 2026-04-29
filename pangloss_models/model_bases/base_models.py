@@ -192,6 +192,8 @@ class _CreateBase(_ActionClass):
 def recursively_propagate_semantic_space_types(
     item: _CreateDBBase, semantic_spaces: list[str]
 ):
+    """Takes a _CreateDBBase instance and recursively adds type of semantic
+    spaces to each contained type below that semantic space node"""
     from pangloss_models.model_bases.semantic_space import _SemanticSpaceCreateDBBase
 
     if not isinstance(item, _SemanticSpaceCreateDBBase):
