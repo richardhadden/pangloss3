@@ -1,5 +1,7 @@
 from typing import Literal
 
+from pydantic.fields import FieldInfo
+
 from pangloss_models import initialise
 from pangloss_models.model_bases.conjunction import Conjunction
 from pangloss_models.model_bases.document import Document

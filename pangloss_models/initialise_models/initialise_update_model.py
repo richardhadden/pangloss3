@@ -1,6 +1,6 @@
 from typing import ClassVar, Literal
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 from pydantic import create_model as pydantic_create_model
 from pydantic.alias_generators import to_camel
 from pydantic.fields import FieldInfo
@@ -95,7 +95,7 @@ def initialise_update_model(
         __module__=model.__module__,
         _owner=(ClassVar[model], model),
         __config__=ConfigDict(alias_generator=to_camel),
-        type=(Literal[model.__name__], model.__name__),  # type: ignore
+        type=(Literal[model.__name__], Field(default=model.__name__)),  # type: ignore
     )  # pyright: ignore[reportAttributeAccessIssue]
 
     build_label_field_on_update_model(model.Update)
