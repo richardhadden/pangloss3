@@ -33,3 +33,7 @@ class AnnotatedLiteral[LiteralType](BaseModel):
 
 class DBField:
     pass
+
+
+class Description(str):
+    pass

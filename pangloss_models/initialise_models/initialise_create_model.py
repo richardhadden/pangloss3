@@ -69,9 +69,9 @@ def build_id_field_on_create_model(model) -> None:
         annotation = UUID | None
         if getattr(model._meta, "accept_url_as_id", False):
             annotation = UUID | AnyHttpUrl | None
-        model.model_fields["id"] = FieldInfo(annotation=annotation, default=None)
+        model.model_fields["id"] = FieldInfo(annotation=annotation, default=None)  # type: ignore
         model.model_fields["create_new"] = FieldInfo(
-            annotation=Literal[True] | None,  # pyright: ignore[reportArgumentType]
+            annotation=Literal[True] | None,  # type: ignore
             default=None,  # pyright: ignore[reportArgumentType]
         )
         model.model_rebuild()
@@ -170,6 +170,7 @@ def initialise_create_model(
         __validators__=get_model_validators(model),
         __module__=model.__module__,
         _owner=(ClassVar[model], model),
+        __doc__=model._meta.description if model._meta.description else "",
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[model.__name__], model.__name__),  # type: ignore
     )  # pyright: ignore[reportAttributeAccessIssue]
@@ -361,10 +362,11 @@ def build_generic_create_model_from_type_option(
             annotation = Union[*annotations]  # ty:ignore[invalid-type-form]
 
         bound_create_model.model_fields[field_name] = FieldInfo(
-            annotation=annotation,
+            annotation=annotation,  # type: ignore
             validation_alias=to_camel(field_name),
             metadata=field_definition.validators,  # type: ignore
             discriminator="type" if not field_definition.wrapper else None,
+            description=field_definition.description,
         )
 
         bound_create_model.model_rebuild(force=True)
@@ -531,6 +533,7 @@ def add_fields_to_create_model(
         model.model_fields[field_name] = FieldInfo(
             annotation=annotation,
             validation_alias=to_camel(field_name),
+            description=field_definition.description,
             **map_validators_to_kwargs(field_definition.validators),
         )
         if has_inherited_bindings:
@@ -554,6 +557,7 @@ def add_fields_to_create_model(
                 annotation=annotation,  # type: ignore
                 validation_alias=to_camel(field_name),
                 discriminator="type",
+                description=field_definition.description,
             )
         if has_inherited_bindings:
             model.model_fields[field_name].default = None
@@ -589,6 +593,7 @@ def add_fields_to_create_model(
                 annotation=annotation,  # type: ignore
                 validation_alias=to_camel(field_name),
                 discriminator="type" if not field_definition.wrapper else None,
+                description=field_definition.description,
                 **map_validators_to_kwargs(field_definition.validators),
             )
 
@@ -612,6 +617,7 @@ def add_fields_to_create_model(
 
         model.model_fields[field_name] = FieldInfo(
             annotation=annotation,
+            description=field_definition.description,
         )
         if has_inherited_bindings:
             model.model_fields[field_name].default = None

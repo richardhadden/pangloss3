@@ -11,6 +11,7 @@ class RelationConfig:
     subclasses_parent_fields: list = field(default_factory=list)
     bind_to_child_field: list[FieldBinding] = field(default_factory=list)
     validators: list[BaseMetadata] = field(default_factory=list)
+    description: str | None = None
 
     def __post_init__(self):
         if self.reverse_name:

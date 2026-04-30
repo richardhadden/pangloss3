@@ -76,7 +76,7 @@ def initialise_update_model(
         | SemanticSpace
     ],
 ) -> None:
-    print("calling update mdoel on ", model)
+
     if not can_have_update_model(model):
         return
 
@@ -94,6 +94,7 @@ def initialise_update_model(
         __base__=update_base_type,
         __module__=model.__module__,
         _owner=(ClassVar[model], model),
+        __doc__=model._meta.description if model._meta.description else "",
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[model.__name__], Field(default=model.__name__)),  # type: ignore
     )  # pyright: ignore[reportAttributeAccessIssue]

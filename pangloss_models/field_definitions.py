@@ -42,6 +42,7 @@ class FieldDefinition:
         default_factory=set
     )
     db_field: bool = False
+    description: str | None = None
 
     @property
     def model_field(self) -> FieldInfo:

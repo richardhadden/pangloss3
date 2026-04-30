@@ -9,6 +9,7 @@ from pangloss_models.field_definitions import (
     ModelFields,
 )
 from pangloss_models.model_bases.base_models import (
+    DeclaredClassMeta,
     _CreateBase,
     _CreateDBBase,
     _DeclaredClass,
@@ -16,7 +17,7 @@ from pangloss_models.model_bases.base_models import (
 )
 
 
-class ConjunctionMeta(BaseMeta):
+class ConjunctionMeta(BaseMeta, DeclaredClassMeta):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     _owner_class: type[Conjunction] | InheritValue = InheritValue.AS_DEFAULT
     abstract: Annotated[bool, MetaRules.DO_NOT_INHERIT] = False

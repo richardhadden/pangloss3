@@ -10,18 +10,19 @@ from pangloss_models.field_definitions import (
     ModelFields,
 )
 from pangloss_models.model_bases.base_models import (
+    DeclaredClassMeta,
     _DeclaredClass,
 )
 
 
-class EdgeModelMeta(BaseMeta):
+class EdgeModelMeta(BaseMeta, DeclaredClassMeta):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     _owner_class: type[EdgeModel] | InheritValue = InheritValue.AS_DEFAULT
 
     field_definitions: ModelFields = Field(default_factory=ModelFields)
 
     @property
-    def fields(
+    def fields(  # type: ignore
         self,
     ) -> ModelFieldDict[str, LiteralFieldDefinition | ListFieldDefinition]:  # pyright: ignore[reportIncompatibleMethodOverride]
         if self.field_definitions:

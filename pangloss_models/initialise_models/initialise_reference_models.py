@@ -49,6 +49,7 @@ def initialise_reference_set_model(model: type[_DeclaredClass]):
         _owner=(ClassVar[model], model),
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[model.__name__], model.__name__),  # type: ignore
+        __doc__=model._meta.description if model._meta.description else "",
         id=id_type,
         label=(str | None, None),
     )  # pyright: ignore[reportAttributeAccessIssue]
@@ -92,6 +93,7 @@ def initialise_reference_view_model(model: type[_DeclaredClass]):
         _owner=(ClassVar[model], model),
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[type_name], type_name),  # type: ignore
+        __doc__=model._meta.description if model._meta.description else "",
         id=id_type,
         label=str,
     )  # pyright: ignore[reportAttributeAccessIssue]
@@ -106,9 +108,10 @@ def initialise_reference_view_model(model: type[_DeclaredClass]):
         field_definition = model._meta.fields[field_name]
 
         model.ReferenceView.model_fields[field_name] = FieldInfo(
-            annotation=field_definition.annotated_type,
+            annotation=field_definition.annotated_type,  # type: ignore
             validation_alias=to_camel(field_name),
             metadata=field_definition.validators,  # type: ignore
+            description=field_definition.description,
         )
 
     model.ReferenceView.model_rebuild(force=True)

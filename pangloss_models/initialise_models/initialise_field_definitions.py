@@ -109,10 +109,13 @@ def build_list_field_definition(
             field_on_model=model,
             field_name=field_name,
             annotated_type=field_info.annotation,
-            validators=field_info.metadata,
+            validators=[
+                md for md in field_info.metadata if isinstance(md, BaseMetadata)
+            ],
             inner_type=list_inner_type,
             inner_type_validators=inner_type_validators,
             db_field=is_db_field,
+            description=extract_field_description(field_info),
         )
     except AssertionError:
         raise PanglossModelError(
@@ -322,6 +325,7 @@ def build_relatable_field_definition(
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
             validators=validators,
+            description=extract_field_description(field_info),
         )
     elif isinstance(field_info.annotation, TypeVar):
         return RelationFieldDefinition(
@@ -342,6 +346,7 @@ def build_relatable_field_definition(
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
             validators=validators,
+            description=extract_field_description(field_info),
         )
 
     elif is_list_relatable(field_info.annotation):
@@ -369,6 +374,7 @@ def build_relatable_field_definition(
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
             validators=validators,
+            description=extract_field_description(field_info),
         )
 
     else:
@@ -395,6 +401,7 @@ def build_relatable_field_definition(
             db_field=is_db_field,
             bind_to_child_field=bind_to_child_field,
             validators=validators,
+            description=extract_field_description(field_info),
         )
 
 
@@ -429,6 +436,7 @@ def build_embedded_field_definition(
             EmbeddedOption(annotated_type=option) for option in field_options
         ),
         db_field=is_db_field,
+        description=extract_field_description(field_info),
     )
 
 
@@ -676,6 +684,24 @@ def check_subclass_type(field_definition: RelationFieldDefinition):
             )
 
 
+def extract_field_description(field_info: FieldInfo) -> str | None:
+    description_objects_or_strings_from_metadata = [
+        str(md) for md in field_info.metadata if isinstance(md, str)
+    ]
+    if (
+        relation_config := extract_relation_config(field_info)
+    ) and relation_config.description:
+        description = relation_config.description
+
+    elif description_objects_or_strings_from_metadata:
+        description = description_objects_or_strings_from_metadata[0]
+
+    else:
+        description = None
+
+    return description
+
+
 def initialise_field_definitions(model: type[_DeclaredClass]):
     """Initialise and register field definitions for the model.
 
@@ -716,6 +742,7 @@ def initialise_field_definitions(model: type[_DeclaredClass]):
                     annotated_type=cast(TypeVar, field_info.annotation),
                     type_var_name=str(field_info.annotation),
                     db_field=is_db_field,
+                    description=extract_field_description(field_info),
                 ),
             )
 
@@ -776,6 +803,7 @@ def initialise_field_definitions(model: type[_DeclaredClass]):
                 field_name=field_name,
                 annotated_type=field_info.annotation,
                 db_field=is_db_field,
+                description=extract_field_description(field_info),
             )
 
             model._meta.field_definitions.add_field(
@@ -817,6 +845,7 @@ def initialise_field_definitions(model: type[_DeclaredClass]):
                     md for md in field_info.metadata if isinstance(md, BaseMetadata)
                 ],
                 db_field=is_db_field,
+                description=extract_field_description(field_info),
             )
 
             model._meta.field_definitions.add_field(

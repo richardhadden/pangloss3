@@ -9,6 +9,7 @@ from pangloss_models.field_definitions import (
     ModelFields,
 )
 from pangloss_models.model_bases.base_models import (
+    DeclaredClassMeta,
     _CreateBase,
     _CreateDBBase,
     _DeclaredClass,
@@ -17,7 +18,7 @@ from pangloss_models.model_bases.base_models import (
 )
 
 
-class ReifiedRelationMeta(BaseModel):
+class ReifiedRelationMeta(BaseModel, DeclaredClassMeta):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     _owner_class: type[ReifiedRelation] | InheritValue = InheritValue.AS_DEFAULT
     require_label: Literal[False] = False
@@ -69,7 +70,7 @@ class ReifiedRelation[TTarget](_DeclaredClass):
         cls._register()
 
 
-class ReifiedRelationDocumentMeta(BaseModel):
+class ReifiedRelationDocumentMeta(BaseModel, DeclaredClassMeta):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     _owner_class: type[ReifiedRelationDocument] | InheritValue = InheritValue.AS_DEFAULT
     require_label: Literal[False] = False

@@ -1,7 +1,7 @@
 import warnings
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import TYPE_CHECKING, Any, ClassVar, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 from uuid import UUID
 
 from pydantic import (
@@ -40,6 +40,15 @@ class DeclaredClassMeta(ABC):
     def fields(self) -> ModelFieldDict[str, FieldDefinition]: ...
 
     field_definitions: ModelFields
+
+    @property
+    def description(self) -> str | None:
+        """Gets description for a class by looking up its docstring"""
+        if _owner := getattr(self, "_owner_class", None):
+            _owner = cast(_DeclaredClass, _owner)
+            if _owner.__doc__:
+                return _owner.__doc__
+        return None
 
 
 class _DeclaredClass(_BaseObject):
