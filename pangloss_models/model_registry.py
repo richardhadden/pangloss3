@@ -218,6 +218,8 @@ class ModelRegistry:
             initialise_reference_view_model,
         )
         from pangloss_models.initialise_models.initialise_update_model import (
+            add_fields_to_update_model,
+            can_have_update_model,
             initialise_update_model,
         )
 
@@ -238,7 +240,7 @@ class ModelRegistry:
             initialise_reference_set_model(model)
             initialise_reference_view_model(model)
 
-        for model in chain(cyclic, order, cyclic):
+        for model in chain(cyclic, order):
             if can_have_create_model(model):
                 initialise_create_model(model)
                 add_fields_to_create_model(model.Create, [])
@@ -247,5 +249,7 @@ class ModelRegistry:
 
             add_fields_to_create_db_model(model)
 
-        for model in chain(cyclic, order, cyclic):
-            initialise_update_model(model=model)
+        for model in chain(cyclic, order):
+            if can_have_update_model(model):
+                initialise_update_model(model=model)
+                add_fields_to_update_model(model.Update, [])

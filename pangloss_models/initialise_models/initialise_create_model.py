@@ -36,7 +36,10 @@ from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateBase,
 )
-from pangloss_models.utils import map_validators_to_kwargs
+from pangloss_models.utils import (
+    field_has_inherited_field_bindings,
+    map_validators_to_kwargs,
+)
 
 
 def check_create_and_id_present(self):
@@ -489,20 +492,6 @@ def get_embedded_annotation_types(
     for type_option in field_definition.type_options:
         types.append(type_option.annotated_type.Create)
     return Union[*types]  # type: ignore
-
-
-def field_has_inherited_field_bindings(
-    fbs: list[FieldBinding], field_name: str, model: type[_DeclaredClass]
-) -> bool:
-    for fb in fbs:
-        if (
-            field_name in fb.child_fields
-            and (not fb.allowed_type_names or model.__name__ in fb.allowed_type_names)
-            and model.__name__ not in fb.excluded_type_names
-        ):
-            return True
-
-    return False
 
 
 def add_fields_to_create_model(

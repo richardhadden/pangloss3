@@ -24,6 +24,7 @@ from pydantic.fields import FieldInfo
 from pydantic_meta_kit import WithMeta
 
 from pangloss_models.exceptions import PanglossModelError
+from pangloss_models.field_definitions import FieldBinding
 from pangloss_models.model_bases.base_models import _BaseObject, _DeclaredClass
 from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.conjunction import Conjunction
@@ -625,3 +626,20 @@ def map_validators_to_kwargs(validators: list[BaseMetadata]):
             case _:
                 pass
     return validator_dict
+
+
+def field_has_inherited_field_bindings(
+    field_bindings: list[FieldBinding], field_name: str, model: type[_DeclaredClass]
+) -> bool:
+    for field_binding in field_bindings:
+        if (
+            field_name in field_binding.child_fields
+            and (
+                not field_binding.allowed_type_names
+                or model.__name__ in field_binding.allowed_type_names
+            )
+            and model.__name__ not in field_binding.excluded_type_names
+        ):
+            return True
+
+    return False

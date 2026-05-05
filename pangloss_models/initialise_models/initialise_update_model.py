@@ -110,3 +110,18 @@ def build_label_field_on_update_model(
 
     if getattr(create_model._meta, "require_label", True):
         create_model.model_fields["label"] = FieldInfo(annotation=str)
+
+
+def add_fields_to_update_model(
+    model: type[
+        _DocumentUpdateBase
+        | _EmbeddedUpdateBase
+        | _EntityUpdateBase
+        | _ReifiedRelationUpdateBase
+        | _ReifiedRelationDocumentUpdateBase
+        | _ConjunctionUpdateBase
+        | _SemanticSpaceUpdateBase
+    ],
+    fields_to_bind: list,
+) -> None:
+    pass

@@ -69,7 +69,7 @@ def build_id_field_on_create_db_model(model) -> None:
         if getattr(model._meta, "accept_url_as_id", False):
             annotation = UUID | AnyHttpUrl | None
         model.CreateDB.model_fields["id"] = FieldInfo(
-            annotation=annotation,
+            annotation=annotation,  # type: ignore
             default=None,  # type: ignore
         )
         model.CreateDB.model_fields["create_new"] = FieldInfo(
