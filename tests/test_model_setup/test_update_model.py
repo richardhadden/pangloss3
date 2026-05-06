@@ -1,8 +1,11 @@
-from typing import Literal
+import datetime
+from typing import Literal, get_args, no_type_check
+from uuid import uuid7
 
 from pangloss_models import initialise
 from pangloss_models.model_bases.conjunction import Conjunction
 from pangloss_models.model_bases.document import Document
+from pangloss_models.model_bases.embedded import Embedded
 from pangloss_models.model_bases.entity import Entity
 from pangloss_models.model_bases.reified_relation import (
     ReifiedRelation,
@@ -136,3 +139,65 @@ def test_semantic_space_has_update_model():
     assert (
         Negative[Action].Update.model_fields["type"].annotation == Literal["Negative"]
     )
+
+
+def test_literal_field_on_update_model():
+    class Statement(Document):
+        number: int
+
+    class Dude(Entity):
+        name: str
+
+    initialise()
+
+    assert Statement.Update.model_fields["number"]
+    assert Statement.Update.model_fields["number"].annotation is int
+
+    assert Dude.Update.model_fields["name"]
+    assert Dude.Update.model_fields["name"].annotation is str
+
+
+@no_type_check
+def test_relation_to_embedded():
+    class Date(Embedded):
+        when: datetime.datetime
+
+    class Other(Date):
+        when: datetime.datetime
+
+    class Statement(Document):
+        date: Date
+
+    initialise()
+
+    assert Date.Update.model_fields["when"].annotation is datetime.datetime
+    assert Date.Update.model_fields["type"].annotation == Literal["Date"]
+
+    assert Statement._meta.fields["date"]
+
+    assert Statement.Create.model_fields["date"]
+    assert (
+        Statement.Create.model_fields["date"].annotation == Date.Create | Other.Create
+    )
+
+    st_update = Statement.Update(
+        id=uuid7(), label="A Statement", date={"type": "Date", "when": "2019-01-01"}
+    )
+
+    assert isinstance(st_update.date, Date.Create)
+
+    st_update2 = Statement.Update(
+        id=uuid7(),
+        label="A Statement",
+        date={"id": uuid7(), "type": "Date", "when": "2019-01-01"},
+    )
+
+    assert isinstance(st_update2.date, Date.Update)
+
+    st_update3 = Statement.Update(
+        id=uuid7(),
+        label="A Statement",
+        date={"id": uuid7(), "type": "Other", "when": "2019-01-01"},
+    )
+
+    assert isinstance(st_update3.date, Other.Update)

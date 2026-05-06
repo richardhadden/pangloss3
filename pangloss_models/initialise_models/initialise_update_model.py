@@ -1,10 +1,12 @@
-from typing import ClassVar, Literal
+from types import UnionType
+from typing import Annotated, Any, ClassVar, Literal, Union
 
-from pydantic import ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag
 from pydantic import create_model as pydantic_create_model
 from pydantic.alias_generators import to_camel
 from pydantic.fields import FieldInfo
 
+from pangloss_models.field_definitions import EmbeddedFieldDefinition
 from pangloss_models.model_bases.base_models import _DeclaredClass, _UpdateBase
 from pangloss_models.model_bases.conjunction import Conjunction, _ConjunctionUpdateBase
 from pangloss_models.model_bases.document import Document, _DocumentUpdateBase
@@ -19,6 +21,10 @@ from pangloss_models.model_bases.reified_relation import (
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceUpdateBase,
+)
+from pangloss_models.utils import (
+    field_has_inherited_field_bindings,
+    map_validators_to_kwargs,
 )
 
 
@@ -112,6 +118,17 @@ def build_label_field_on_update_model(
         create_model.model_fields["label"] = FieldInfo(annotation=str)
 
 
+def get_embedded_annotation_types(
+    field_definition: EmbeddedFieldDefinition,
+) -> UnionType:
+    types = []
+    for type_option in field_definition.type_options:
+        types.append(type_option.annotated_type.Update)
+        types.append(type_option.annotated_type.Create)
+
+    return Union[*types]  # type: ignore
+
+
 def add_fields_to_update_model(
     model: type[
         _DocumentUpdateBase
@@ -125,3 +142,48 @@ def add_fields_to_update_model(
     fields_to_bind: list,
 ) -> None:
     pass
+
+    # Literal fields
+    for field_name, field_definition in model._meta.fields.literal_fields.items():
+        has_inherited_bindings = field_has_inherited_field_bindings(
+            fields_to_bind, field_name, field_definition.field_on_model
+        )
+        if has_inherited_bindings:
+            annotation = field_definition.annotated_type | None
+        else:
+            annotation = field_definition.annotated_type
+
+        if field_definition.db_field:
+            continue
+        model.model_fields[field_name] = FieldInfo(
+            annotation=annotation,
+            validation_alias=to_camel(field_name),
+            description=field_definition.description,
+            **map_validators_to_kwargs(field_definition.validators),
+        )
+        if has_inherited_bindings:
+            model.model_fields[field_name].default = None
+
+    # Embedded fields
+    for field_name, field_definition in model._meta.fields.embedded_fields.items():
+        if field_definition.db_field:
+            continue
+
+        annotation = get_embedded_annotation_types(field_definition)
+
+        has_inherited_bindings = field_has_inherited_field_bindings(
+            fields_to_bind, field_name, field_definition.field_on_model
+        )
+        if has_inherited_bindings:
+            annotation = annotation | None
+
+        if annotation:
+            model.model_fields[field_name] = FieldInfo(
+                annotation=annotation,  # type: ignore
+                validation_alias=to_camel(field_name),
+                description=field_definition.description,
+            )
+        if has_inherited_bindings:
+            model.model_fields[field_name].default = None
+
+    model.model_rebuild(force=True)
