@@ -482,7 +482,7 @@ def get_relation_annotation_types(
             Annotated[Union[*types], Field(discriminator="type")]
         ]
 
-    return Union[*types]  # ty:ignore[invalid-type-form]
+    return Union[*types]
 
 
 def get_embedded_annotation_types(
