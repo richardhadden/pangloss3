@@ -523,41 +523,48 @@ def test_relation_to_entity_via_reified_relation():
     assert issubclass(Identification.Update, _ReifiedRelationUpdateBase)
     assert Identification.Update.model_fields["some_value"].annotation is int
 
-    """
-    assert (
-        Statement.Update.model_fields["is_about_person"].annotation.__name__
-        == "Identification[Person]Create"
-    )
-
-    identification_person_create_model = Statement.Create.model_fields[
+    statement_update_is_about_person_annotation = Statement.Update.model_fields[
         "is_about_person"
     ].annotation
-    assert issubclass(identification_person_create_model, Identification.Create)
-    assert (
-        identification_person_create_model.model_fields["some_value"].annotation is int
-    )
-    assert identification_person_create_model._owner is Identification
 
-    target_annotation = identification_person_create_model.model_fields[
+    args = get_args(statement_update_is_about_person_annotation)
+    assert args[0].__name__ == "Identification[Person]Update"
+    assert args[1].__name__ == "Identification[Person]Create"
+
+    assert issubclass(args[0], Identification.Update)
+    assert issubclass(args[1], Identification.Create)
+
+    identification_person_update_model = args[0]
+
+    assert (
+        identification_person_update_model.model_fields["some_value"].annotation is int
+    )
+
+    assert identification_person_update_model._owner is Identification
+
+    target_annotation = identification_person_update_model.model_fields[
         "target"
     ].annotation
     assert get_origin(target_annotation) is list
     assert get_args(get_args(target_annotation)[0])[0] is Person.ReferenceSet
 
-    st_uuid = uuid7()
+    statement_uuid = uuid7()
+    person_uuid = uuid7()
+    is_about_person_identification_id = uuid7()
 
-    st = Statement.Create(
+    st = Statement.Update(
+        id=statement_uuid,
         label="A Statement",
         is_about_person={
+            "id": is_about_person_identification_id,
             "type": "Identification",
-            "target": [{"type": "Person", "id": st_uuid}],
+            "target": [{"type": "Person", "id": person_uuid}],
             "some_value": 1,
         },
     )
 
-    assert isinstance(st.is_about_person, identification_person_create_model)
-    assert st.is_about_person.target[0].id == st_uuid
-    """
+    assert isinstance(st.is_about_person, identification_person_update_model)
+    assert st.is_about_person.target[0].id == person_uuid
 
 
 @no_type_check

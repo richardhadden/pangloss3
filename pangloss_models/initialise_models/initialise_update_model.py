@@ -1,3 +1,4 @@
+from functools import cache
 from types import UnionType
 from typing import Annotated, Any, ClassVar, Literal, Union, cast
 
@@ -148,6 +149,7 @@ def recursively_get_generic_naming(
     return f"{', '.join(names)}"
 
 
+@cache
 def build_generic_update_model_from_type_option(
     type_option: RelationToGeneric, field_bindings
 ):
@@ -445,15 +447,22 @@ def get_relation_annotation_types(
             type_option,
             (RelationToGeneric),
         ):
-            bound_reified_create_type = build_generic_update_model_from_type_option(
+            bound_reified_update_type = build_generic_update_model_from_type_option(
+                type_option, frozenset(field_bindings)
+            )
+            bound_reified_create_type = build_generic_create_model_from_type_option(
                 type_option, frozenset(field_bindings)
             )
 
             if type_option.edge_model:
                 types.append(
+                    bound_reified_update_type.apply_edge_model(type_option.edge_model)
+                )
+                types.append(
                     bound_reified_create_type.apply_edge_model(type_option.edge_model)
                 )
             else:
+                types.append(bound_reified_update_type)
                 types.append(bound_reified_create_type)
 
     if not types:
