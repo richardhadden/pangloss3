@@ -75,7 +75,7 @@ def build_id_field_on_create_model(model) -> None:
         model.model_fields["id"] = FieldInfo(annotation=annotation, default=None)  # type: ignore
         model.model_fields["create_new"] = FieldInfo(
             annotation=Literal[True] | None,  # type: ignore
-            default=None,  # pyright: ignore[reportArgumentType]
+            default=None,
         )
         model.model_rebuild()
 

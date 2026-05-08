@@ -1,7 +1,7 @@
 import datetime
 from inspect import isclass
 from types import UnionType
-from typing import Annotated, Literal, get_args, get_origin, no_type_check
+from typing import Annotated, Literal, Union, get_args, get_origin, no_type_check
 from uuid import UUID, uuid7
 
 import pytest
@@ -583,79 +583,236 @@ def test_relation_with_double_reified_relation():
 
     initialise()
 
-    is_about_person_field = Statement.Create.model_fields["is_about_person"]
-    assert (
-        is_about_person_field.annotation.__name__
-        == "WithProxy[Identification[Person], Identification[Person]]Create"
-    )
-    assert issubclass(is_about_person_field.annotation, WithProxy.Create)
-    assert is_about_person_field.annotation.model_fields["target"].annotation
-    proxy_target_annotation = is_about_person_field.annotation.model_fields[
-        "target"
-    ].annotation
-    assert get_origin(proxy_target_annotation) is list
-    assert get_origin(get_args(proxy_target_annotation)[0]) is Annotated
+    is_about_person_field = Statement.Update.model_fields["is_about_person"]
+    is_about_person_field_annotation = is_about_person_field.annotation
 
-    proxy_identification_target_annotation = get_args(
-        get_args(proxy_target_annotation)[0]
+    assert get_origin(is_about_person_field_annotation) == Union
+    is_about_person_args = get_args(is_about_person_field_annotation)
+
+    assert issubclass(is_about_person_args[0], WithProxy.Update)
+    assert issubclass(is_about_person_args[1], WithProxy.Create)
+
+    is_about_person_args_0_target_annotation = (
+        is_about_person_args[0].model_fields["target"].annotation
+    )
+    assert get_origin(is_about_person_args_0_target_annotation) is list
+
+    is_about_person_args_0_target_annotation_args = get_args(
+        is_about_person_args_0_target_annotation
     )[0]
-    assert issubclass(proxy_identification_target_annotation, Identification.Create)
+    assert get_origin(is_about_person_args_0_target_annotation_args) is Annotated
+    is_about_person_args_0_target_annotation_args_0 = get_args(
+        is_about_person_args_0_target_annotation_args
+    )[0]
+    assert get_origin(is_about_person_args_0_target_annotation_args_0) == Union
+
+    (
+        is_about_person_args_0_target_annotation_args_0_args_0,
+        is_about_person_args_0_target_annotation_args_0_args_1,
+    ) = get_args(is_about_person_args_0_target_annotation_args_0)
+
+    assert (
+        is_about_person_args_0_target_annotation_args_0_args_0.__name__
+        == "Identification[Person]Update"
+    )
+
     assert (
         get_origin(
-            proxy_identification_target_annotation.model_fields["target"].annotation
+            is_about_person_args_0_target_annotation_args_0_args_0.model_fields[
+                "target"
+            ].annotation
         )
         is list
     )
+
     assert (
         get_origin(
             get_args(
-                proxy_identification_target_annotation.model_fields["target"].annotation
+                is_about_person_args_0_target_annotation_args_0_args_0.model_fields[
+                    "target"
+                ].annotation
             )[0]
         )
-        is Annotated
+        == Annotated
     )
+
     assert (
         get_args(
             get_args(
-                proxy_identification_target_annotation.model_fields["target"].annotation
+                is_about_person_args_0_target_annotation_args_0_args_0.model_fields[
+                    "target"
+                ].annotation
             )[0]
         )[0]
         is Person.ReferenceSet
     )
 
-    assert is_about_person_field.annotation.model_fields["proxy"].annotation
-    proxy_proxy_annotation = is_about_person_field.annotation.model_fields[
-        "proxy"
-    ].annotation
-    assert get_origin(proxy_proxy_annotation) is list
-    assert get_origin(get_args(proxy_proxy_annotation)[0]) is Annotated
+    assert (
+        is_about_person_args_0_target_annotation_args_0_args_1.__name__
+        == "Identification[Person]Create"
+    )
 
-    proxy_identification_target_annotation = get_args(
-        get_args(proxy_proxy_annotation)[0]
+    is_about_person_args_0_proxy_annotation = (
+        is_about_person_args[0].model_fields["proxy"].annotation
+    )
+    assert get_origin(is_about_person_args_0_proxy_annotation) is list
+
+    is_about_person_args_0_proxy_annotation_args = get_args(
+        is_about_person_args_0_proxy_annotation
     )[0]
-    assert issubclass(proxy_identification_target_annotation, Identification.Create)
+    assert get_origin(is_about_person_args_0_target_annotation_args) is Annotated
+    is_about_person_args_0_proxy_annotation_args_0 = get_args(
+        is_about_person_args_0_proxy_annotation_args
+    )[0]
+    assert get_origin(is_about_person_args_0_proxy_annotation_args_0) == Union
+
+    (
+        is_about_person_args_0_proxy_annotation_args_0_args_0,
+        is_about_person_args_0_proxy_annotation_args_0_args_1,
+    ) = get_args(is_about_person_args_0_proxy_annotation_args_0)
+
+    assert (
+        is_about_person_args_0_proxy_annotation_args_0_args_0.__name__
+        == "Identification[Person]Update"
+    )
+
     assert (
         get_origin(
-            proxy_identification_target_annotation.model_fields["target"].annotation
+            is_about_person_args_0_proxy_annotation_args_0_args_0.model_fields[
+                "target"
+            ].annotation
         )
         is list
     )
+
     assert (
         get_origin(
             get_args(
-                proxy_identification_target_annotation.model_fields["target"].annotation
+                is_about_person_args_0_proxy_annotation_args_0_args_0.model_fields[
+                    "target"
+                ].annotation
             )[0]
         )
-        is Annotated
+        == Annotated
     )
+
     assert (
         get_args(
             get_args(
-                proxy_identification_target_annotation.model_fields["target"].annotation
+                is_about_person_args_0_proxy_annotation_args_0_args_0.model_fields[
+                    "target"
+                ].annotation
             )[0]
         )[0]
         is Person.ReferenceSet
     )
+
+    assert (
+        is_about_person_args_0_proxy_annotation_args_0_args_1.__name__
+        == "Identification[Person]Create"
+    )
+
+    st_update = Statement.Update(
+        **{
+            "type": "Statement",
+            "label": "A Statement",
+            "id": uuid7(),
+            "is_about_person": {
+                "type": "WithProxy",
+                "target": [
+                    {
+                        "type": "Identification",
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+                "proxy": [
+                    {
+                        "type": "Identification",
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+            },
+        }
+    )
+
+    assert isinstance(st_update.is_about_person, WithProxy.Create)
+    assert isinstance(st_update.is_about_person.target[0], Identification.Create)
+    assert isinstance(st_update.is_about_person.proxy[0], Identification.Create)
+
+    st_update2 = Statement.Update(
+        **{
+            "type": "Statement",
+            "label": "A Statement",
+            "id": uuid7(),
+            "is_about_person": {
+                "type": "WithProxy",
+                "id": uuid7(),
+                "target": [
+                    {
+                        "type": "Identification",
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+                "proxy": [
+                    {
+                        "type": "Identification",
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+            },
+        }
+    )
+
+    assert isinstance(st_update2.is_about_person, WithProxy.Update)
+    assert isinstance(st_update2.is_about_person.target[0], Identification.Create)
+    assert isinstance(st_update2.is_about_person.proxy[0], Identification.Create)
+
+    st_update3 = Statement.Update(
+        **{
+            "type": "Statement",
+            "label": "A Statement",
+            "id": uuid7(),
+            "is_about_person": {
+                "type": "WithProxy",
+                "id": uuid7(),
+                "target": [
+                    {
+                        "type": "Identification",
+                        "id": uuid7(),
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+                "proxy": [
+                    {
+                        "type": "Identification",
+                        "target": [
+                            {"type": "Person", "id": uuid7()},
+                        ],
+                        "some_value": 1,
+                    }
+                ],
+            },
+        }
+    )
+
+    assert isinstance(st_update3.is_about_person, WithProxy.Update)
+    assert isinstance(st_update3.is_about_person.target[0], Identification.Update)
+    assert isinstance(st_update3.is_about_person.proxy[0], Identification.Create)
 
 
 @no_type_check
