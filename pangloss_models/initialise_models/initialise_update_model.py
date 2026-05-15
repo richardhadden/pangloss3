@@ -581,5 +581,25 @@ def add_fields_to_update_model(
 
             if field_optional:
                 model.model_fields[field_name].default = None
+    # Annotated values
+    for (
+        field_name,
+        field_definition,
+    ) in model._meta.fields.annotated_value_fields.items():
+        if field_definition.db_field:
+            continue
 
+        annotation = field_definition.annotated_type
+        has_inherited_bindings = field_has_inherited_field_bindings(
+            fields_to_bind, field_name, field_definition.field_on_model
+        )
+        if has_inherited_bindings:
+            annotation = annotation | None
+
+        model.model_fields[field_name] = FieldInfo(
+            annotation=annotation,
+            description=field_definition.description,
+        )
+        if has_inherited_bindings:
+            model.model_fields[field_name].default = None
     model.model_rebuild(force=True)

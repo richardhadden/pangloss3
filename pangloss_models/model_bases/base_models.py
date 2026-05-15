@@ -131,7 +131,9 @@ class _ReferenceSetBase(_ActionClass):
         return self
 
 
-def allow_bind_on_this_item(item: _CreateBase, binding: FieldBinding) -> bool:
+def allow_bind_on_this_item(
+    item: _CreateBase | _UpdateBase, binding: FieldBinding
+) -> bool:
     return bool(
         (
             binding.allowed_type_names
@@ -146,13 +148,15 @@ def allow_bind_on_this_item(item: _CreateBase, binding: FieldBinding) -> bool:
 
 
 def recursively_add_bound_field_values(
-    item: _CreateBase, binding: FieldBinding, value=None
+    item: _CreateBase | _UpdateBase, binding: FieldBinding, value=None
 ):
     """Given an item, a FieldBinding instance and a value, try to
     bind values where rules are followed, and call itself to try on
     all nested items"""
     child_bound_fields = binding.child_fields
-    if isinstance(item, _CreateBase) and allow_bind_on_this_item(item, binding):
+    if isinstance(item, _CreateBase | _UpdateBase) and allow_bind_on_this_item(
+        item, binding
+    ):
         for child_bound_field in child_bound_fields:
             if isinstance(item, list):
                 for ri in item:
@@ -256,6 +260,23 @@ class _ViewBase(_ActionClass):
 
 class _UpdateBase(_ActionClass):
     id: UUID
+
+    @model_validator(mode="after")
+    def propagate_bound_values(self) -> Self:
+        """Get any binding-fields for this model and try to bind
+        on nested objects"""
+        for (
+            field_name,
+            bindings,
+        ) in self._meta.fields.bind_to_child_field_bindings.items():
+            for binding in bindings:
+                value = getattr(self, binding.bound_field)
+                if binding.converter:
+                    value = binding.converter(value)
+                related_item = getattr(self, field_name)
+                recursively_add_bound_field_values(related_item, binding, value=value)
+
+        return self
 
 
 class _UpdateDBBase(_ActionClass):

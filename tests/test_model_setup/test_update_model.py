@@ -932,9 +932,6 @@ def test_relation_with_semantic_space():
     assert isinstance(f3.has_statement[0].contents[0], Statement.Update)
 
 
-""" TESTS FIXED UP TO HERE """
-
-
 @no_type_check
 def test_relation_with_conjunction():
     class Causes[TCause, TResult](Conjunction):
@@ -1067,7 +1064,7 @@ def test_relation_to_trait():
 
     initialise()
 
-    thing_carried_out_by_field = Statement.Create.model_fields["thing_carried_out_by"]
+    thing_carried_out_by_field = Statement.Update.model_fields["thing_carried_out_by"]
     assert (
         thing_carried_out_by_field.annotation
         == Person.ReferenceSet
@@ -1093,11 +1090,11 @@ def test_annotated_value():
 
     assert WithCertainty[str].model_fields["value"].annotation is str
 
-    assert Naming.Create.model_fields["name"].annotation == WithCertainty[str]
+    assert Naming.Update.model_fields["name"].annotation == WithCertainty[str]
 
 
 @no_type_check
-def test_db_field_not_in_create_model():
+def test_db_field_not_in_update_model():
 
     class Statement(Document):
         some_field: int
@@ -1115,12 +1112,12 @@ def test_db_field_not_in_create_model():
 
     initialise()
 
-    assert "some_field" in Statement.Create.model_fields
-    assert "db_int_field" not in Statement.Create.model_fields
-    assert "person_field" in Statement.Create.model_fields
-    assert "db_person_field" not in Statement.Create.model_fields
-    assert "embedded_field" in Statement.Create.model_fields
-    assert "db_embedded_field" not in Statement.Create.model_fields
+    assert "some_field" in Statement.Update.model_fields
+    assert "db_int_field" not in Statement.Update.model_fields
+    assert "person_field" in Statement.Update.model_fields
+    assert "db_person_field" not in Statement.Update.model_fields
+    assert "embedded_field" in Statement.Update.model_fields
+    assert "db_embedded_field" not in Statement.Update.model_fields
 
 
 @no_type_check
@@ -1148,14 +1145,14 @@ def test_inherited_from_fulfils_is_optional():
     initialise()
 
     assert (
-        Activity.Create.model_fields["person_responsible"].annotation
+        Activity.Update.model_fields["person_responsible"].annotation
         is Person.ReferenceSet
     )
 
-    assert Activity.Create.model_fields["place"].annotation == Place.ReferenceSet | None
+    assert Activity.Update.model_fields["place"].annotation == Place.ReferenceSet | None
 
 
-def test_create_model_with_field_binding():
+def test_update_model_with_field_binding():
     class Action(Document):
         action_when: datetime.date
         action_when_optional: datetime.date | None
@@ -1177,13 +1174,28 @@ def test_create_model_with_field_binding():
 
     initialise()
 
-    action_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
+    action_annotation = Statement.Update.model_fields["action"].annotation
+    assert isinstance(action_annotation, UnionType)
+    action_annotation_update, action_annotation_create = get_args(action_annotation)
+
+    assert isclass(action_annotation_update) and issubclass(
+        action_annotation_update, Action.Update
+    )
+    assert isclass(action_annotation_create) and issubclass(
+        action_annotation_create, Action.Create
+    )
+
     assert (
-        action_model.model_fields["action_when_optional"].annotation
+        action_annotation_update.model_fields["action_when"].annotation
         == datetime.date | None
     )
+    assert (
+        action_annotation_update.model_fields["action_when_optional"].annotation
+        == datetime.date | None
+    )
+
+
+""" TESTS FIXED UP TO HERE """
 
 
 @no_type_check
