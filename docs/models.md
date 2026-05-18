@@ -6,17 +6,19 @@ Node Types
 
 ### `Document`
 (SHOULD documents be nestable?)
-Describes a top-level viewable document (maps to node)
+Describes a arbitrarily nestable viewable document (maps to node)
 
 Inbound types:
 - Create
+  - CreateDB
 - Update
+  - UpdateDB
 
 Outbound types:
-- View -- plain view model for embedded docs, inc. for editing
+- View -- plain view model for embedded docs, inc. for Editing
     - ID, Label
 - HeadView
-    - ID, Label, _meta, "context" (if nested?)
+    - ID, Label, _meta, "context" (if nested?) —— also for Editing?
 - ReferenceView
     - ID, Label, containing doc ref/type, in_semantic_spaces, 
 
