@@ -1,4 +1,5 @@
 import datetime
+from inspect import isclass
 from types import UnionType
 from typing import Annotated, Literal, get_args, get_origin, no_type_check
 from uuid import UUID, uuid7
@@ -31,6 +32,7 @@ from pangloss_models.model_bases.helpers import DBField, Fulfils, ViaEdge
 from pangloss_models.model_bases.reified_relation import (
     ReifiedRelation,
     _ReifiedRelationCreateDBBase,
+    _ReifiedRelationUpdateDBBase,
 )
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
@@ -326,12 +328,9 @@ def test_add_relation_from_document_to_document():
     assert "action" in Statement._meta.fields
     assert Statement.UpdateDB.model_fields["action"]
     assert get_args(Statement.UpdateDB.model_fields["action"].annotation) == (
-        Action.CreateDB,
         Action.UpdateDB,
+        Action.CreateDB,
     )
-
-
-"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -348,11 +347,13 @@ def test_add_relation_from_document_to_document_via_edge():
     initialise()
 
     assert "action" in Statement._meta.fields
-    assert Statement.CreateDB.model_fields["action"]
-    assert (
-        Statement.CreateDB.model_fields["action"].annotation
-        is Action.CreateDB._via.Certainty
+    assert Statement.UpdateDB.model_fields["action"]
+    assert isinstance(Statement.UpdateDB.model_fields["action"].annotation, UnionType)
+    update_db_type, create_db_type = get_args(
+        Statement.UpdateDB.model_fields["action"].annotation
     )
+    assert create_db_type is Action.CreateDB._via.Certainty
+    assert update_db_type is Action.UpdateDB._via.Certainty
 
 
 @no_type_check
@@ -372,8 +373,15 @@ def test_add_self_reference_to_document():
     initialise()
 
     assert (
-        Order.CreateDB.model_fields["thing_ordered"].annotation
-        == Order.CreateDB | DeferredOrder.CreateDB | Task.CreateDB | SubTask.CreateDB
+        Order.UpdateDB.model_fields["thing_ordered"].annotation
+        == Order.CreateDB
+        | Order.UpdateDB
+        | DeferredOrder.CreateDB
+        | DeferredOrder.UpdateDB
+        | Task.CreateDB
+        | Task.UpdateDB
+        | SubTask.CreateDB
+        | SubTask.UpdateDB
     )
 
 
@@ -390,43 +398,48 @@ def test_relation_to_entity_via_reified_relation():
 
     initialise()
 
-    assert issubclass(Identification.CreateDB, _ReifiedRelationCreateDBBase)
-    assert Identification.CreateDB.model_fields["some_value"].annotation is int
+    assert issubclass(Identification.UpdateDB, _ReifiedRelationUpdateDBBase)
+    assert Identification.UpdateDB.model_fields["some_value"].annotation is int
 
-    assert (
-        Statement.CreateDB.model_fields["is_about_person"].annotation.__name__
-        == "Identification[Person]CreateDB"
+    assert isinstance(
+        Statement.UpdateDB.model_fields["is_about_person"].annotation, UnionType
     )
 
-    identification_person_create_db_model = Statement.CreateDB.model_fields[
-        "is_about_person"
-    ].annotation
-    assert issubclass(identification_person_create_db_model, Identification.CreateDB)
-    assert (
-        identification_person_create_db_model.model_fields["some_value"].annotation
-        is int
+    update_identification_type, create_identification_type = get_args(
+        Statement.UpdateDB.model_fields["is_about_person"].annotation
     )
-    assert identification_person_create_db_model._owner is Identification
+    assert create_identification_type.__name__ == "Identification[Person]CreateDB"
+    assert update_identification_type.__name__ == "Identification[Person]UpdateDB"
 
-    target_annotation = identification_person_create_db_model.model_fields[
-        "target"
-    ].annotation
+    assert issubclass(create_identification_type, Identification.CreateDB)
+    assert issubclass(update_identification_type, Identification.UpdateDB)
+
+    assert update_identification_type.model_fields["some_value"].annotation is int
+    assert update_identification_type._owner is Identification
+
+    target_annotation = update_identification_type.model_fields["target"].annotation
     assert get_origin(target_annotation) is list
     assert get_args(get_args(target_annotation)[0])[0] is Person.ReferenceSet
 
     st_uuid = uuid7()
 
-    st = Statement.CreateDB(
+    st = Statement.UpdateDB(
+        id=uuid7(),
         label="A Statement",
         is_about_person={
+            "id": uuid7(),
             "type": "Identification",
             "target": [{"type": "Person", "id": st_uuid}],
             "some_value": 1,
         },
     )
 
-    assert isinstance(st.is_about_person, identification_person_create_db_model)
+    assert st.is_about_person.id
+    assert isinstance(st.is_about_person, update_identification_type)
     assert st.is_about_person.target[0].id == st_uuid
+
+
+"""Tests fixed up to here"""
 
 
 @no_type_check

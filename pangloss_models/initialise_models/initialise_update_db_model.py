@@ -274,8 +274,8 @@ def build_generic_update_db_model_from_type_option(
 
                             if to.annotated_type._meta.create_inline:
                                 initialise_update_db_model(to.annotated_type)
-                                annotations.append(to.annotated_type.CreateDB)
                                 annotations.append(to.annotated_type.UpdateDB)
+                                annotations.append(to.annotated_type.CreateDB)
 
                     # If relation to Document...
                     elif isinstance(to, RelationToDocument):
@@ -283,19 +283,20 @@ def build_generic_update_db_model_from_type_option(
                         initialise_update_db_model(to.annotated_type)
                         if to.edge_model:
                             annotations.append(
-                                to.annotated_type.CreateDB.apply_edge_model(
-                                    to.edge_model
-                                )
-                            )
-                            annotations.append(
                                 to.annotated_type.UpdateDB.apply_edge_model(
                                     to.edge_model
                                 )
                             )
+                            annotations.append(
+                                to.annotated_type.CreateDB.apply_edge_model(
+                                    to.edge_model
+                                )
+                            )
+
                         else:
                             # Add or use Document.UpdateDB
-                            annotations.append(to.annotated_type.CreateDB)
                             annotations.append(to.annotated_type.UpdateDB)
+                            annotations.append(to.annotated_type.CreateDB)
 
                     # Otherwise, if it is anything that can be generic,
                     # pass the type option back to the this function to get the
@@ -351,8 +352,8 @@ def build_generic_update_db_model_from_type_option(
                     )
                 else:
                     # Add or use Document.CreateDB
-                    annotations.append(generic_type_option.annotated_type.CreateDB)
                     annotations.append(generic_type_option.annotated_type.UpdateDB)
+                    annotations.append(generic_type_option.annotated_type.CreateDB)
 
         if field_definition.wrapper:
             annotation = field_definition.wrapper[  # type: ignore
@@ -395,18 +396,19 @@ def get_relation_annotation_types(
             initialise_update_db_model(type_option.annotated_type)
             if type_option.edge_model:
                 types.append(
-                    type_option.annotated_type.CreateDB.apply_edge_model(
-                        type_option.edge_model
-                    )
-                )
-                types.append(
                     type_option.annotated_type.UpdateDB.apply_edge_model(
                         type_option.edge_model
                     )
                 )
+                types.append(
+                    type_option.annotated_type.CreateDB.apply_edge_model(
+                        type_option.edge_model
+                    )
+                )
+
             else:
-                types.append(type_option.annotated_type.CreateDB)
                 types.append(type_option.annotated_type.UpdateDB)
+                types.append(type_option.annotated_type.CreateDB)
 
         elif isinstance(
             type_option,
@@ -422,15 +424,15 @@ def get_relation_annotation_types(
 
             if type_option.edge_model:
                 types.append(
-                    bound_reified_create_type.apply_edge_model(type_option.edge_model)
+                    bound_reified_update_type.apply_edge_model(type_option.edge_model)
                 )
                 types.append(
-                    bound_reified_update_type.apply_edge_model(type_option.edge_model)
+                    bound_reified_create_type.apply_edge_model(type_option.edge_model)
                 )
 
             else:
-                types.append(bound_reified_create_type)
                 types.append(bound_reified_update_type)
+                types.append(bound_reified_create_type)
 
     if not types:
         return None
