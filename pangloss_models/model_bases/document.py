@@ -17,6 +17,7 @@ from pangloss_models.model_bases.base_models import (
     _ReferenceSetBase,
     _ReferenceViewBase,
     _UpdateBase,
+    _UpdateDBBase,
     _ViewBase,
 )
 
@@ -65,6 +66,10 @@ class _DocumentUpdateBase(_UpdateBase):
     pass
 
 
+class _DocumentUpdateDBBase(_UpdateDBBase):
+    pass
+
+
 class DocumentReferenceViewBase(_ReferenceViewBase):
     pass
 
@@ -85,6 +90,7 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
     CreateDB: ClassVar[type[_DocumentCreateDBBase]]
     View: ClassVar[type[_DocumentViewBase]]
     Update: ClassVar[type[_DocumentUpdateBase]]
+    UpdateDB: ClassVar[type[_DocumentUpdateDBBase]]
 
     ReferenceView: ClassVar[type[DocumentReferenceViewBase]]
     ReferenceSetBase: ClassVar[type[DocumentReferenceSetBase]]

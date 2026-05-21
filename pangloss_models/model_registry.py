@@ -217,6 +217,10 @@ class ModelRegistry:
             initialise_reference_set_model,
             initialise_reference_view_model,
         )
+        from pangloss_models.initialise_models.initialise_update_db_model import (
+            add_fields_to_update_db_model,
+            initialise_update_db_model,
+        )
         from pangloss_models.initialise_models.initialise_update_model import (
             add_fields_to_update_model,
             can_have_update_model,
@@ -253,3 +257,7 @@ class ModelRegistry:
             if can_have_update_model(model):
                 initialise_update_model(model=model)
                 add_fields_to_update_model(model.Update, [])
+
+            initialise_update_db_model(model)
+
+            add_fields_to_update_db_model(model)

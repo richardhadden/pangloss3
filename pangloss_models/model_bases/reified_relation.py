@@ -15,6 +15,7 @@ from pangloss_models.model_bases.base_models import (
     _DeclaredClass,
     _ReferenceViewBase,
     _UpdateBase,
+    _UpdateDBBase,
 )
 
 
@@ -42,6 +43,10 @@ class _ReifiedRelationUpdateBase(_UpdateBase):
     pass
 
 
+class _ReifiedRelationUpdateDBBase(_UpdateDBBase):
+    pass
+
+
 class ReifiedRelation[TTarget](_DeclaredClass):
     Meta: ClassVar[type[ReifiedRelationMeta]] = ReifiedRelationMeta
     model_config = ConfigDict(validate_assignment=True)
@@ -50,6 +55,7 @@ class ReifiedRelation[TTarget](_DeclaredClass):
     Create: ClassVar[type[_ReifiedRelationCreateBase]]
     CreateDB: ClassVar[type[_ReifiedRelationCreateDBBase]]
     Update: ClassVar[type[_ReifiedRelationUpdateBase]]
+    UpdateDB: ClassVar[type[_ReifiedRelationUpdateDBBase]]
 
     target: list[TTarget]
 
@@ -100,6 +106,10 @@ class _ReifiedRelationDocumentUpdateBase(_UpdateBase):
     pass
 
 
+class _ReifiedRelationDocumentUpdateDBBase(_UpdateDBBase):
+    pass
+
+
 class _ReifiedRelationDocumentReferenceView(_ReferenceViewBase):
     label: str
 
@@ -112,6 +122,7 @@ class ReifiedRelationDocument[TTarget](_DeclaredClass):
     Create: ClassVar[type[_ReifiedRelationDocumentCreateBase]]
     CreateDB: ClassVar[type[_ReifiedRelationCreateDBBase]]
     Update: ClassVar[type[_ReifiedRelationDocumentUpdateBase]]
+    UpdateDB: ClassVar[type[_ReifiedRelationDocumentUpdateDBBase]]
     ReferenceView: ClassVar[type[_ReifiedRelationDocumentReferenceView]]
 
     target: list[TTarget]

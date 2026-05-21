@@ -14,6 +14,7 @@ from pangloss_models.model_bases.base_models import (
     _CreateDBBase,
     _DeclaredClass,
     _UpdateBase,
+    _UpdateDBBase,
 )
 
 
@@ -41,12 +42,17 @@ class _SemanticSpaceUpdateBase(_UpdateBase):
     pass
 
 
+class _SemanticSpaceUpdateDBBAse(_UpdateDBBase):
+    pass
+
+
 class SemanticSpace[TContents](_DeclaredClass):
     _meta: ClassVar[SemanticSpaceMeta] = SemanticSpaceMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_SemanticSpaceCreateBase]]
     CreateDB: ClassVar[type[_SemanticSpaceCreateDBBase]]
     Update: ClassVar[type[_SemanticSpaceUpdateBase]]
+    UpdateDB: ClassVar[type[_SemanticSpaceUpdateDBBAse]]
 
     contents: list[TContents]
 

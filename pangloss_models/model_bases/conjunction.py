@@ -14,6 +14,7 @@ from pangloss_models.model_bases.base_models import (
     _CreateDBBase,
     _DeclaredClass,
     _UpdateBase,
+    _UpdateDBBase,
 )
 
 
@@ -41,12 +42,17 @@ class _ConjunctionUpdateBase(_UpdateBase):
     pass
 
 
+class _ConjunctionUpdateDBBase(_UpdateDBBase):
+    pass
+
+
 class Conjunction(_DeclaredClass, WithMeta[ConjunctionMeta]):
     _meta: ClassVar[ConjunctionMeta] = ConjunctionMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_ConjunctionCreateBase]]
     CreateDB: ClassVar[type[_ConjunctionCreateDBBase]]
     Update: ClassVar[type[_ConjunctionUpdateBase]]
+    UpdateDB: ClassVar[type[_ConjunctionUpdateDBBase]]
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs) -> None:
