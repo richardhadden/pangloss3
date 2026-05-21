@@ -1273,11 +1273,8 @@ def test_update_model_with_field_binding_through_intermediate():
     assert st.action.contents[0].action_when == datetime.date.today()
 
 
-""" TESTS FIXED UP TO HERE """
-
-
 @no_type_check
-def test_create_model_with_field_binding_through_intermediate_with_transform():
+def test_update_model_with_field_binding_through_intermediate_with_transform():
 
     class Action(Document):
         action_when: datetime.date
@@ -1366,7 +1363,7 @@ def test_create_model_with_field_binding_through_intermediate_with_transform():
 
 
 @no_type_check
-def test_create_model_with_field_binding_through_intermediate_ignoring_type():
+def test_update_model_with_field_binding_through_intermediate_ignoring_type():
 
     class Action(Document):
         action_when: datetime.date
@@ -1429,35 +1426,46 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type():
     )
 
     assert bound_action_create.model_fields["action_when"].annotation == datetime.date
-    """
+
     # Test that not providing Action.action_when raises error as binding only
     # applied to SubAction
     with pytest.raises(ValidationError):
-        Statement.Create(
+        Statement.Update(
+            id=uuid7(),
             label="A Statement",
             when=datetime.date.today(),
             action={
+                "id": uuid7(),
                 "type": "Negative",
                 "contents": [
                     {
+                        "id": uuid7(),
                         "type": "Action",
                         "label": "An action",
+                        "subaction": {
+                            "type": "SubAction",
+                            "label": "A SubAction",
+                        },
                     }
                 ],
             },
         )
 
-    st = Statement.Create(
+    st = Statement.Update(
+        id=uuid7(),
         label="A Statement",
         when=datetime.date.today(),
         action={
+            "id": uuid7(),
             "type": "Negative",
             "contents": [
                 {
+                    "id": uuid7(),
                     "type": "Action",
                     "label": "An action",
                     "action_when": datetime.date.today(),
                     "subaction": {
+                        "id": uuid7(),
                         "type": "SubAction",
                         "label": "A SubAction",
                     },
@@ -1471,11 +1479,13 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type():
     assert st.action.contents[
         0
     ].subaction.action_when == datetime.date.today() + datetime.timedelta(days=1)
-    """
+
+
+""" TESTS FIXED UP TO HERE """
 
 
 @no_type_check
-def test_create_model_with_field_binding_through_intermediate_ignoring_type_does_not_override_given_value():
+def test_update_model_with_field_binding_through_intermediate_ignoring_type_does_not_override_given_value():
 
     class Action(Document):
         action_when: datetime.date
@@ -1496,7 +1506,7 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type_does
                     FieldBinding(
                         bound_field="when",
                         child_fields=["action_when"],
-                        allowed_type_names=["Action", "SubAction"],
+                        excluded_type_names=["Action"],
                         converter=lambda x: x + datetime.timedelta(days=1),
                     ),
                 ]
@@ -1505,31 +1515,21 @@ def test_create_model_with_field_binding_through_intermediate_ignoring_type_does
 
     initialise()
 
-    negative_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
-
-    negative_contents_fields = negative_model.model_fields["contents"]
-    assert get_origin(negative_contents_fields.annotation) is list
-    annotated_action_model = get_args(negative_contents_fields.annotation)[0]
-
-    assert get_origin(annotated_action_model) is Annotated
-    action_model = get_args(annotated_action_model)[0]
-    assert action_model
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
-
-    st = Statement.Create(
+    st = Statement.Update(
+        id=uuid7(),
         label="A Statement",
         when=datetime.date.today(),
         action={
+            "id": uuid7(),
             "type": "Negative",
             "contents": [
                 {
+                    "id": uuid7(),
                     "type": "Action",
                     "label": "An action",
                     "action_when": datetime.date.today(),
                     "subaction": {
+                        "id": uuid7(),
                         "type": "SubAction",
                         "label": "A SubAction",
                     },
@@ -1563,11 +1563,11 @@ def test_relation_validator():
 
     assert statements_field.validators == [MinLen(1)]
 
-    assert Factoid.Create.model_fields["statements"]
-    assert Factoid.Create.model_fields["statements"].metadata == [MinLen(1)]
+    assert Factoid.Update.model_fields["statements"]
+    assert Factoid.Update.model_fields["statements"].metadata == [MinLen(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", statements=[])
+        Factoid.Update(id=uuid7(), label="A Factoid", statements=[])
 
 
 @no_type_check
@@ -1585,11 +1585,11 @@ def test_literal_validators():
 
     assert statements_field.validators == [Gt(1)]
 
-    assert Factoid.Create.model_fields["number"]
-    assert Factoid.Create.model_fields["number"].metadata == [Gt(1)]
+    assert Factoid.Update.model_fields["number"]
+    assert Factoid.Update.model_fields["number"].metadata == [Gt(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", number=1)
+        Factoid.Update(id=uuid7(), label="A Factoid", number=1)
 
 
 @no_type_check
@@ -1605,13 +1605,13 @@ def test_list_validators():
     assert statements_field.validators == [MinLen(1)]
     assert statements_field.inner_type_validators == [Gt(1)]
 
-    assert Factoid.Create.model_fields["numbers"]
-    assert Factoid.Create.model_fields["numbers"].metadata == [MinLen(1)]
+    assert Factoid.Update.model_fields["numbers"]
+    assert Factoid.Update.model_fields["numbers"].metadata == [MinLen(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", numbers=[])
+        Factoid.Update(id=uuid7(), label="A Factoid", numbers=[])
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", numbers=[1])
+        Factoid.Update(id=uuid7(), label="A Factoid", numbers=[1])
 
-    Factoid.Create(label="A Factoid", numbers=[2, 2, 2])
+    Factoid.Update(id=uuid7(), label="A Factoid", numbers=[2, 2, 2])
