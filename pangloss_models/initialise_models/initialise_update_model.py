@@ -356,6 +356,9 @@ def get_model_validators(model):
     return validators
 
 
+bound_models_built = {}
+
+
 def build_bound_field_update_model[
     TModel: type[
         _DocumentUpdateBase
@@ -384,6 +387,11 @@ def build_bound_field_update_model[
         ),
     )
 
+    args_hash = hash(hash(update_model) + hash(frozenset((field_bindings))))
+
+    if args_hash in bound_models_built:
+        return bound_models_built[args_hash]
+
     model = update_model._owner
 
     bound_fields_create_model: TModel = cast(
@@ -398,6 +406,8 @@ def build_bound_field_update_model[
             type=(Literal[model.__name__], model.__name__),  # type: ignore
         ),
     )
+
+    bound_models_built[args_hash] = bound_fields_create_model
 
     build_label_field_on_update_model(bound_fields_create_model)
 

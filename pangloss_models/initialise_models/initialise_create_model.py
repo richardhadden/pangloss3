@@ -1,3 +1,4 @@
+from functools import cache
 from types import UnionType
 from typing import Annotated, ClassVar, Literal, TypeVar, Union, cast
 from uuid import UUID
@@ -377,6 +378,9 @@ def build_generic_create_model_from_type_option(
     return bound_create_model
 
 
+bound_models_built = {}
+
+
 def build_bound_field_create_model[
     TModel: type[
         _DocumentCreateBase
@@ -389,7 +393,7 @@ def build_bound_field_create_model[
     ]
 ](
     create_model: TModel,
-    field_bindings: list[FieldBinding],
+    field_bindings: frozenset[FieldBinding],
 ) -> TModel:
 
     assert issubclass(
@@ -405,6 +409,11 @@ def build_bound_field_create_model[
         ),
     )
 
+    args_hash = hash(hash(create_model) + hash(frozenset((field_bindings))))
+
+    if args_hash in bound_models_built:
+        return bound_models_built[args_hash]
+
     model = create_model._owner
 
     bound_fields_create_model: TModel = cast(
@@ -419,6 +428,8 @@ def build_bound_field_create_model[
             type=(Literal[model.__name__], model.__name__),  # type: ignore
         ),
     )
+
+    bound_models_built[args_hash] = bound_fields_create_model
 
     build_id_field_on_create_model(bound_fields_create_model)
     build_label_field_on_create_model(bound_fields_create_model)
@@ -447,9 +458,11 @@ def get_relation_annotation_types(
 
         elif isinstance(type_option, RelationToDocument):
             initialise_create_model(type_option.annotated_type)
+            print(type_option.annotated_type.Create)
+            print(field_bindings)
             if field_bindings:
                 create_model = build_bound_field_create_model(
-                    type_option.annotated_type.Create, field_bindings
+                    type_option.annotated_type.Create, frozenset(field_bindings)
                 )
             else:
                 create_model = type_option.annotated_type.Create
@@ -558,7 +571,7 @@ def add_fields_to_create_model(
     ) in model._meta.fields.relation_fields.items():
         if field_definition.db_field:
             continue
-
+        print(field_name, field_definition)
         annotation = get_relation_annotation_types(
             field_definition,
             field_bindings=[

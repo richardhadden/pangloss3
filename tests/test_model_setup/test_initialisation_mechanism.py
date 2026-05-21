@@ -1,4 +1,9 @@
+import datetime
+from typing import Annotated
+
 from pangloss_models import initialise
+from pangloss_models.field_definitions import FieldBinding
+from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.semantic_space import SemanticSpace
 from pangloss_models.model_registry import ModelRegistry
@@ -3474,3 +3479,33 @@ def test_initialisation_interleaved_order_120():
 
     assert Factoid.Create.model_fields["statements"]
     assert Order.Create.model_fields["thing_ordered"]
+
+
+def test_initialisation_with_bound_self_reference():
+    """Tests that we don't have an infinite recursion creating
+    bound field model variant"""
+
+    class Action(Document):
+        action_when: datetime.date
+        subaction: Action
+
+    class Negative[T](SemanticSpace[T]):
+        pass
+
+    class Statement(Document):
+        when: datetime.date
+        action: Annotated[
+            Negative[Action],
+            RelationConfig(
+                bind_to_child_field=[
+                    FieldBinding(
+                        bound_field="when",
+                        child_fields=["action_when"],
+                        allowed_type_names=["Action"],
+                        converter=lambda x: x + datetime.timedelta(days=1),
+                    ),
+                ]
+            ),
+        ]
+
+    initialise()
