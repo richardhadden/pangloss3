@@ -203,13 +203,16 @@ class _CreateBase(_ActionClass):
 
 
 def recursively_propagate_semantic_space_types(
-    item: _CreateDBBase, semantic_spaces: list[str]
+    item: _CreateDBBase | _UpdateDBBase, semantic_spaces: list[str]
 ):
     """Takes a _CreateDBBase instance and recursively adds type of semantic
     spaces to each contained type below that semantic space node"""
-    from pangloss_models.model_bases.semantic_space import _SemanticSpaceCreateDBBase
+    from pangloss_models.model_bases.semantic_space import (
+        _SemanticSpaceCreateDBBase,
+        _SemanticSpaceUpdateDBBAse,
+    )
 
-    if not isinstance(item, _SemanticSpaceCreateDBBase):
+    if not isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBAse)):
         item.semantic_spaces = [*semantic_spaces]
 
     if isinstance(item, _SemanticSpaceCreateDBBase):
@@ -219,11 +222,11 @@ def recursively_propagate_semantic_space_types(
         if related_item := getattr(item, field_name, None):
             if isinstance(related_item, list):
                 for ri in related_item:
-                    if isinstance(ri, _CreateDBBase):
+                    if isinstance(ri, (_CreateDBBase, _UpdateDBBase)):
                         recursively_propagate_semantic_space_types(ri, semantic_spaces)
 
             else:
-                if isinstance(related_item, _CreateDBBase):
+                if isinstance(related_item, (_CreateDBBase, _UpdateDBBase)):
                     recursively_propagate_semantic_space_types(
                         related_item, semantic_spaces
                     )
@@ -261,6 +264,11 @@ class _ViewBase(_ActionClass):
 class _UpdateBase(_ActionClass):
     id: UUID
 
+    def _to_db_model(self):
+        db_model_instance = self._owner.UpdateDB(**self.model_dump())  # type: ignore
+        recursively_propagate_semantic_space_types(db_model_instance, [])
+        return db_model_instance
+
     @model_validator(mode="after")
     def propagate_bound_values(self) -> Self:
         """Get any binding-fields for this model and try to bind
@@ -281,3 +289,22 @@ class _UpdateBase(_ActionClass):
 
 class _UpdateDBBase(_ActionClass):
     id: UUID
+    semantic_spaces: list[str] = Field(default_factory=list)
+
+    def __init__(self, **kwargs):
+
+        # Calling model_construct emits a warning that the data might not be valid,
+        # so catch these and supress. This is fine as we later pass the data back to
+        # the class.__init__, which will validate it
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if f := getattr(
+                self._owner, "to_db_update", getattr(self._owner, "to_db", None)
+            ):
+                data = f(self.__class__.model_construct(**kwargs))
+                if isinstance(data, dict):
+                    super().__init__(**data)
+                else:
+                    super().__init__(**data.model_dump())
+            else:
+                super().__init__(**kwargs)

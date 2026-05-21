@@ -46,18 +46,18 @@ def test_camel_case():
 
     initialise()
 
-    st = Statement.CreateDB(**dict(label="A statement", someSnake="hello"))
+    st = Statement.UpdateDB(**dict(id=uuid7(), label="A statement", someSnake="hello"))
     assert st.some_snake == "hello"
 
 
 @no_type_check
-def test_meta_accessible_through_create():
+def test_meta_accessible_through_update():
     class Statement(Document):
         some_snake: str
 
     initialise()
 
-    assert Statement.CreateDB._meta is Statement._meta
+    assert Statement.UpdateDB._meta is Statement._meta
 
 
 @no_type_check
@@ -67,48 +67,48 @@ def test_type_field_is_correct():
 
     initialise()
 
-    assert Statement.CreateDB.model_fields["type"].annotation == Literal["Statement"]
+    assert Statement.UpdateDB.model_fields["type"].annotation == Literal["Statement"]
 
 
 @no_type_check
-def test_create_model_for_document_with_no_id():
+def test_update_model_for_document_with_no_id():
     class Statement(Document):
         pass
 
     initialise()
 
-    assert Statement.CreateDB
+    assert Statement.UpdateDB
 
-    assert Statement.CreateDB._owner is Statement
+    assert Statement.UpdateDB._owner is Statement
 
-    assert "id" in Statement.CreateDB.model_fields
+    assert "id" in Statement.UpdateDB.model_fields
 
-    st = Statement.CreateDB(label="A Statement")
+    st = Statement.UpdateDB(id=uuid7(), label="A Statement")
     assert st.label == "A Statement"
 
 
 @no_type_check
-def test_create_model_for_document_with_id_allowed():
+def test_update_model_for_document_with_id_allowed():
     class Statement(Document):
         _meta = Document.Meta(create_with_id=True)
 
     initialise()
 
-    assert Statement.CreateDB
-    assert "id" in Statement.CreateDB.model_fields
+    assert Statement.UpdateDB
+    assert "id" in Statement.UpdateDB.model_fields
 
-    id_field = Statement.CreateDB.model_fields["id"]
+    id_field = Statement.UpdateDB.model_fields["id"]
 
     assert id_field.annotation == UUID | None
 
-    st = Statement.CreateDB(id=uuid7(), create_new=True, label="A Statement")
+    st = Statement.UpdateDB(id=uuid7(), create_new=True, label="A Statement")
     assert isinstance(st.id, UUID)
     assert st.create_new
     assert st.label == "A Statement"
 
 
 @no_type_check
-def test_create_model_for_document_with_id_and_url_allowed_and_no_label():
+def test_update_model_for_document_with_id_and_url_allowed_and_no_label():
     class Statement(Document):
         _meta = Document.Meta(
             create_with_id=True, accept_url_as_id=True, require_label=False
@@ -116,85 +116,45 @@ def test_create_model_for_document_with_id_and_url_allowed_and_no_label():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert "id" in Statement.CreateDB.model_fields
+    assert Statement.UpdateDB
+    assert "id" in Statement.UpdateDB.model_fields
 
-    id_field = Statement.CreateDB.model_fields["id"]
+    id_field = Statement.UpdateDB.model_fields["id"]
 
     assert id_field.annotation == UUID | AnyHttpUrl | None
 
-    st = Statement.CreateDB(
+    st = Statement.UpdateDB(
         id="http://test.com/statement1",
-        create_new=True,
     )
     assert isinstance(st.id, AnyHttpUrl)
-    assert st.create_new
 
 
 @no_type_check
-def test_create_model_for_entity():
+def test_update_model_for_entity():
     class Person(Entity):
         pass
 
     initialise()
 
-    assert Person.CreateDB
+    assert Person.UpdateDB
 
-    assert "id" in Person.CreateDB.model_fields
-    assert "label" in Person.CreateDB.model_fields
-
-
-@no_type_check
-def test_entity_meta_requires_create_id_if_create_inline():
-    with pytest.raises(PanglossMetaError):
-
-        class Fails(Entity):
-            _meta = Entity.Meta(create_inline=True)
-
-        initialise()
-
-    class Works(Entity):
-        _meta = Entity.Meta(create_inline=True, create_with_id=True)
-
-    initialise()
+    assert "id" in Person.UpdateDB.model_fields
+    assert "label" in Person.UpdateDB.model_fields
 
 
 @no_type_check
-def test_create_model_for_entity_with_id():
-    class Person(Entity):
-        _meta = Entity.Meta(create_with_id=True)
-
-    initialise()
-
-    assert Person.CreateDB
-
-    assert "id" in Person.CreateDB.model_fields
-    assert Person.CreateDB.model_fields["id"].annotation == UUID | AnyHttpUrl | None
-    assert "label" in Person.CreateDB.model_fields
-
-    p = Person.CreateDB(id=uuid7(), label="John Smith", create_new=True)
-    assert p.id
-
-    # With an ID provided, create_new=True must also be set
-    with pytest.raises(ValidationError):
-        Person.CreateDB(id="http://mything.net/person", label="Toby Jones")
-
-    Person.CreateDB(label="Toby Jones", create_new=True)
-
-
-@no_type_check
-def test_build_base_create_model_for_reified_relation():
+def test_build_base_update_model_for_reified_relation():
 
     class Identification[TTarget](ReifiedRelation[TTarget]):
         pass
 
     initialise()
 
-    assert "id" not in Identification.CreateDB.model_fields
+    assert "id" in Identification.UpdateDB.model_fields
 
 
 @no_type_check
-def test_add_fields_to_document_create_model():
+def test_add_fields_to_document_update_model():
     class Statement(Document):
         name: str
         age: int
@@ -202,19 +162,21 @@ def test_add_fields_to_document_create_model():
 
     initialise()
 
-    assert "name" in Statement.CreateDB.model_fields
-    name_field = Statement.CreateDB.model_fields["name"]
+    assert "name" in Statement.UpdateDB.model_fields
+    name_field = Statement.UpdateDB.model_fields["name"]
     assert name_field.annotation is str
 
-    assert "age" in Statement.CreateDB.model_fields
-    age_field = Statement.CreateDB.model_fields["age"]
+    assert "age" in Statement.UpdateDB.model_fields
+    age_field = Statement.UpdateDB.model_fields["age"]
     assert age_field.annotation is int
 
-    assert "numbers" in Statement.CreateDB.model_fields
-    numbers_field = Statement.CreateDB.model_fields["numbers"]
+    assert "numbers" in Statement.UpdateDB.model_fields
+    numbers_field = Statement.UpdateDB.model_fields["numbers"]
     assert numbers_field.annotation == list[int]
 
-    st = Statement.CreateDB(label="A Statement", name="John", age=12, numbers=[1, 2, 3])
+    st = Statement.UpdateDB(
+        id=uuid7(), label="A Statement", name="John", age=12, numbers=[1, 2, 3]
+    )
     assert st.label == "A Statement"
     assert st.name == "John"
     assert st.age == 12
@@ -222,7 +184,7 @@ def test_add_fields_to_document_create_model():
 
     with pytest.raises(ValidationError):
         st = Statement.CreateDB(
-            label="A Statement", name="John", age=12, numbers="WRONG"
+            id=uuid7(), label="A Statement", name="John", age=12, numbers="WRONG"
         )
 
 
@@ -237,10 +199,10 @@ def test_add_simple_relation_from_document_to_entity():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert Statement.CreateDB.model_fields["was_carried_out_by"]
+    assert Statement.UpdateDB
+    assert Statement.UpdateDB.model_fields["was_carried_out_by"]
     assert (
-        Statement.CreateDB.model_fields["was_carried_out_by"].annotation
+        Statement.UpdateDB.model_fields["was_carried_out_by"].annotation
         is Person.ReferenceSet
     )
 
@@ -259,10 +221,10 @@ def test_add_simple_relation_from_document_to_entity_inheriting():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert Statement.CreateDB.model_fields["was_carried_out_by"]
+    assert Statement.UpdateDB
+    assert Statement.UpdateDB.model_fields["was_carried_out_by"]
     assert (
-        Statement.CreateDB.model_fields["was_carried_out_by"].annotation
+        Statement.UpdateDB.model_fields["was_carried_out_by"].annotation
         == Person.ReferenceSet | Dude.ReferenceSet
     )
 
@@ -281,15 +243,17 @@ def test_add_simple_relation_from_document_to_by_union():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert Statement.CreateDB.model_fields["was_carried_out_by"]
+    assert Statement.UpdateDB
+    assert Statement.UpdateDB.model_fields["was_carried_out_by"]
     assert (
-        Statement.CreateDB.model_fields["was_carried_out_by"].annotation
+        Statement.UpdateDB.model_fields["was_carried_out_by"].annotation
         == Person.ReferenceSet | Dude.ReferenceSet
     )
 
-    st = Statement.CreateDB(
-        label="A Statement", was_carried_out_by={"type": "Dude", "id": uuid7()}
+    st = Statement.UpdateDB(
+        id=uuid7(),
+        label="A Statement",
+        was_carried_out_by={"type": "Dude", "id": uuid7()},
     )
     assert st.label == "A Statement"
     assert isinstance(st.was_carried_out_by, Dude.ReferenceSet)
@@ -305,13 +269,15 @@ def test_add_simple_relation_from_document_to_entity_with_list_wrapper():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert Statement.CreateDB.model_fields["was_carried_out_by"]
-    annotation = Statement.CreateDB.model_fields["was_carried_out_by"].annotation
+    assert Statement.UpdateDB
+    assert Statement.UpdateDB.model_fields["was_carried_out_by"]
+    annotation = Statement.UpdateDB.model_fields["was_carried_out_by"].annotation
     assert get_args(get_args(annotation)[0])[0] is Person.ReferenceSet
 
-    st = Statement.CreateDB(
-        label="A Statement", was_carried_out_by=[{"type": "Person", "id": uuid7()}]
+    st = Statement.UpdateDB(
+        id=uuid7(),
+        label="A Statement",
+        was_carried_out_by=[{"type": "Person", "id": uuid7()}],
     )
 
     assert isinstance(st.was_carried_out_by, list)
@@ -332,10 +298,10 @@ def test_add_simple_relation_from_document_to_entity_via_edge():
 
     initialise()
 
-    assert Statement.CreateDB
-    assert Statement.CreateDB.model_fields["was_carried_out_by"]
+    assert Statement.UpdateDB
+    assert Statement.UpdateDB.model_fields["was_carried_out_by"]
     assert (
-        Statement.CreateDB.model_fields["was_carried_out_by"].annotation
+        Statement.UpdateDB.model_fields["was_carried_out_by"].annotation
         is Person.ReferenceSet._via.Certainty
     )
 
@@ -358,8 +324,14 @@ def test_add_relation_from_document_to_document():
     initialise()
 
     assert "action" in Statement._meta.fields
-    assert Statement.CreateDB.model_fields["action"]
-    assert Statement.CreateDB.model_fields["action"].annotation is Action.CreateDB
+    assert Statement.UpdateDB.model_fields["action"]
+    assert get_args(Statement.UpdateDB.model_fields["action"].annotation) == (
+        Action.CreateDB,
+        Action.UpdateDB,
+    )
+
+
+"""Tests fixed up to here"""
 
 
 @no_type_check
