@@ -42,7 +42,7 @@ class _SemanticSpaceUpdateBase(_UpdateBase):
     pass
 
 
-class _SemanticSpaceUpdateDBBAse(_UpdateDBBase):
+class _SemanticSpaceUpdateDBBase(_UpdateDBBase):
     pass
 
 
@@ -52,7 +52,7 @@ class SemanticSpace[TContents](_DeclaredClass):
     Create: ClassVar[type[_SemanticSpaceCreateBase]]
     CreateDB: ClassVar[type[_SemanticSpaceCreateDBBase]]
     Update: ClassVar[type[_SemanticSpaceUpdateBase]]
-    UpdateDB: ClassVar[type[_SemanticSpaceUpdateDBBAse]]
+    UpdateDB: ClassVar[type[_SemanticSpaceUpdateDBBase]]
 
     contents: list[TContents]
 

@@ -38,7 +38,7 @@ from pangloss_models.model_bases.reified_relation import (
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateDBBase,
-    _SemanticSpaceUpdateDBBAse,
+    _SemanticSpaceUpdateDBBase,
 )
 from pangloss_models.model_bases.trait import Trait
 
@@ -612,11 +612,11 @@ def test_relation_with_semantic_space():
         ]
     )
 
-    NegativeStatementUpdateDB: type[_SemanticSpaceUpdateDBBAse] = [
+    NegativeStatementUpdateDB: type[_SemanticSpaceUpdateDBBase] = [
         c for c in type_union_items if c.__name__ == "Negative[Statement]UpdateDB"
     ][0]
 
-    assert issubclass(NegativeStatementUpdateDB, _SemanticSpaceUpdateDBBAse)
+    assert issubclass(NegativeStatementUpdateDB, _SemanticSpaceUpdateDBBase)
 
     f = Factoid.UpdateDB(
         id=uuid7(),
@@ -643,9 +643,6 @@ def test_relation_with_semantic_space():
     assert isinstance(f.has_statement[0], Negative.UpdateDB)
     assert f.has_statement[0].contents[0].type == "Statement"
     assert isinstance(f.has_statement[0].contents[0], Statement.UpdateDB)
-
-
-"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -770,7 +767,7 @@ def test_relation_to_trait():
 
     initialise()
 
-    thing_carried_out_by_field = Statement.CreateDB.model_fields["thing_carried_out_by"]
+    thing_carried_out_by_field = Statement.UpdateDB.model_fields["thing_carried_out_by"]
     assert (
         thing_carried_out_by_field.annotation
         == Person.ReferenceSet
@@ -779,8 +776,10 @@ def test_relation_to_trait():
         | Posse.ReferenceSet
     )
 
-    st = Statement(
-        label="A Statement", thing_carried_out_by={"type": "Group", "id": uuid7()}
+    st = Statement.UpdateDB(
+        id=uuid7(),
+        label="A Statement",
+        thing_carried_out_by={"type": "Group", "id": uuid7()},
     )
 
 
@@ -794,15 +793,15 @@ def test_relation_to_embedded():
 
     initialise()
 
-    assert Date.CreateDB.model_fields["when"].annotation is datetime.datetime
-    assert Date.CreateDB.model_fields["type"].annotation == Literal["Date"]
+    assert Date.UpdateDB.model_fields["when"].annotation is datetime.datetime
+    assert Date.UpdateDB.model_fields["type"].annotation == Literal["Date"]
 
     assert Statement._meta.fields["date"]
 
-    assert Statement.CreateDB.model_fields["date"]
+    assert Statement.UpdateDB.model_fields["date"]
 
-    st = Statement.CreateDB(
-        label="A Statement", date={"type": "Date", "when": "2019-01-01"}
+    st = Statement.UpdateDB(
+        id=uuid7(), label="A Statement", date={"type": "Date", "when": "2019-01-01"}
     )
 
     assert st.label == "A Statement"
@@ -810,6 +809,18 @@ def test_relation_to_embedded():
     assert st.date.type == "Date"
     assert isinstance(st.date.when, datetime.datetime)
     assert st.date.when == datetime.datetime(2019, 1, 1)
+
+    st2 = Statement.UpdateDB(
+        id=uuid7(),
+        label="A Statement",
+        date={"type": "Date", "when": "2019-01-01", "id": uuid7()},
+    )
+
+    assert st2.label == "A Statement"
+    assert isinstance(st2.date, Date.UpdateDB)
+    assert st2.date.type == "Date"
+    assert isinstance(st2.date.when, datetime.datetime)
+    assert st2.date.when == datetime.datetime(2019, 1, 1)
 
 
 @no_type_check
@@ -824,7 +835,10 @@ def test_annotated_value():
 
     assert WithCertainty[str].model_fields["value"].annotation is str
 
-    assert Naming.CreateDB.model_fields["name"].annotation == WithCertainty[str]
+    assert Naming.UpdateDB.model_fields["name"].annotation == WithCertainty[str]
+
+
+"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -854,17 +868,17 @@ def test_inherited_from_fulfils_is_optional():
     initialise()
 
     assert (
-        Activity.CreateDB.model_fields["person_responsible"].annotation
+        Activity.UpdateDB.model_fields["person_responsible"].annotation
         is Person.ReferenceSet
     )
 
     assert (
-        Activity.CreateDB.model_fields["place"].annotation == Place.ReferenceSet | None
+        Activity.UpdateDB.model_fields["place"].annotation == Place.ReferenceSet | None
     )
 
 
 @no_type_check
-def test_db_field_in_create_db_model():
+def test_db_field_in_update_db_model():
 
     class Statement(Document):
         some_field: int
@@ -882,16 +896,16 @@ def test_db_field_in_create_db_model():
 
     initialise()
 
-    assert "some_field" in Statement.CreateDB.model_fields
-    assert "db_int_field" in Statement.CreateDB.model_fields
-    assert "person_field" in Statement.CreateDB.model_fields
-    assert "db_person_field" in Statement.CreateDB.model_fields
-    assert "embedded_field" in Statement.CreateDB.model_fields
-    assert "db_embedded_field" in Statement.CreateDB.model_fields
+    assert "some_field" in Statement.UpdateDB.model_fields
+    assert "db_int_field" in Statement.UpdateDB.model_fields
+    assert "person_field" in Statement.UpdateDB.model_fields
+    assert "db_person_field" in Statement.UpdateDB.model_fields
+    assert "embedded_field" in Statement.UpdateDB.model_fields
+    assert "db_embedded_field" in Statement.UpdateDB.model_fields
 
 
 @no_type_check
-def test_can_convert_create_to_create_db_model():
+def test_can_convert_create_to_update_db_model():
     class Statement(Document):
         name: str
         carried_out_by: Person
@@ -905,27 +919,28 @@ def test_can_convert_create_to_create_db_model():
 
     initialise()
 
-    st = Statement(
+    st = Statement.Update(
+        id=uuid7(),
         label="A Statement Label",
         name="A Statement",
         carried_out_by={"type": "Person", "id": uuid7()},
-        action_carried_out={"type": "Action", "label": "An Action"},
+        action_carried_out={"type": "Action", "label": "An Action", "id": uuid7()},
     )
 
     st_db = st._to_db_model()
 
-    assert isinstance(st_db, Statement.CreateDB)
+    assert isinstance(st_db, Statement.UpdateDB)
     assert st_db.label == "A Statement Label"
     assert st_db.name == "A Statement"
     assert isinstance(st_db.carried_out_by, Person.ReferenceSet)
     assert st_db.carried_out_by.type == "Person"
 
-    assert isinstance(st_db.action_carried_out, Action.CreateDB)
+    assert isinstance(st_db.action_carried_out, Action.UpdateDB)
     assert st_db.action_carried_out.type == "Action"
 
 
 @no_type_check
-def test_can_convert_create_to_create_db_model_with_declared_conversion():
+def test_can_convert_update_to_update_db_model_with_declared_conversion():
     class Statement(Document):
         name: str
         carried_out_by: Person
@@ -955,20 +970,27 @@ def test_can_convert_create_to_create_db_model_with_declared_conversion():
 
             return {**incoming_data.model_dump(), "name": name}
 
+        @staticmethod
+        def to_db_update(incoming_data):
+            name = "something else update name"
+
+            return {**incoming_data.model_dump(), "name": name}
+
     initialise()
 
-    st = Statement(
+    st = Statement.Update(
+        id=uuid7(),
         label="A Statement Label",
         name="A Statement",
         carried_out_by={"type": "Person", "id": uuid7()},
         something_else={"type": "SomethingElse", "label": "somethingelse"},
     )
 
-    assert Statement.CreateDB.model_fields["type"].annotation == Literal["Statement"]
+    assert Statement.Update.model_fields["type"].annotation == Literal["Statement"]
 
     st_db = st._to_db_model()
 
-    assert isinstance(st_db, Statement.CreateDB)
+    assert isinstance(st_db, Statement.UpdateDB)
     assert st_db.label == "A Statement Label"
     assert st_db.name == "A Statement"
     assert isinstance(st_db.carried_out_by, Person.ReferenceSet)
@@ -981,63 +1003,37 @@ def test_can_convert_create_to_create_db_model_with_declared_conversion():
     assert isinstance(st_db.something_else, SomethingElse.CreateDB)
     assert st_db.something_else.name == "something else name"
 
-
-@no_type_check
-def test_document_create_db_has_id_field():
-    class Statement(Document):
-        pass
-
-    initialise()
-
-    st1 = Statement.Create(label="A Statement")
-
-    st1_db = st1._to_db_model()
-
-    assert st1_db.id
-
-
-@no_type_check
-def test_entity_create_db_has_id_field():
-    class Person(Entity):
-        pass
-
-    initialise()
-
-    p = Person.Create(label="John Smith")
-
-    p_db = p._to_db_model()
-    assert isinstance(p_db.id, UUID)
-
-
-@no_type_check
-def test_entity_create_db_retains_provided_id():
-    class Person(Entity):
-        _meta = Entity.Meta(create_with_id=True)
-
-    initialise()
-
-    given_uuid = uuid7()
-    p = Person.Create(id=given_uuid, label="Toby Jones", create_new=True)
-    assert p.id
-
-    p_db = p._to_db_model()
-    assert p_db.id == given_uuid
-
-
-@no_type_check
-def test_entity_create_db_has_new_id_but_keeps_url_when_provided():
-    class Person(Entity):
-        _meta = Entity.Meta(create_with_id=True, accept_url_as_id=True)
-
-    initialise()
-
-    p = Person.Create(
-        id="http://something.net/Toby_Jones", label="Toby Jones", create_new=True
+    st = Statement.Update(
+        id=uuid7(),
+        label="A Statement Label",
+        name="A Statement",
+        carried_out_by={"type": "Person", "id": uuid7()},
+        something_else={
+            "type": "SomethingElse",
+            "label": "somethingelse",
+            "id": uuid7(),
+        },
     )
 
-    p_db = p._to_db_model()
-    assert isinstance(p_db.id, UUID)
-    assert p_db.urls == set([AnyHttpUrl("http://something.net/Toby_Jones")])
+    assert Statement.CreateDB.model_fields["type"].annotation == Literal["Statement"]
+
+    st_db = st._to_db_model()
+
+    assert isinstance(st_db, Statement.UpdateDB)
+    assert st_db.label == "A Statement Label"
+    assert st_db.name == "A Statement"
+    assert isinstance(st_db.carried_out_by, Person.ReferenceSet)
+    assert st_db.carried_out_by.type == "Person"
+
+    assert isinstance(st_db.action_carried_out, Action.CreateDB)
+    assert st_db.action_carried_out.type == "Action"
+    assert st_db.action_carried_out.label == "A Statement action"
+
+    assert isinstance(st_db.something_else, SomethingElse.UpdateDB)
+    assert st_db.something_else.name == "something else update name"
+
+
+"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -1058,11 +1054,11 @@ def test_relation_validator():
 
     assert statements_field.validators == [MinLen(1)]
 
-    assert Factoid.CreateDB.model_fields["statements"]
-    assert Factoid.CreateDB.model_fields["statements"].metadata == [MinLen(1)]
+    assert Factoid.UpdateDB.model_fields["statements"]
+    assert Factoid.UpdateDB.model_fields["statements"].metadata == [MinLen(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.CreateDB(label="A Factoid", statements=[])
+        Factoid.UpdateDB(label="A Factoid", statements=[])
 
 
 @no_type_check
@@ -1080,11 +1076,11 @@ def test_literal_validators():
 
     assert statements_field.validators == [Gt(1)]
 
-    assert Factoid.CreateDB.model_fields["number"]
-    assert Factoid.CreateDB.model_fields["number"].metadata == [Gt(1)]
+    assert Factoid.UpdateDB.model_fields["number"]
+    assert Factoid.UpdateDB.model_fields["number"].metadata == [Gt(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.CreateDB(label="A Factoid", number=1)
+        Factoid.UpdateDB(label="A Factoid", number=1)
 
 
 @no_type_check
@@ -1100,20 +1096,20 @@ def test_list_validators():
     assert statements_field.validators == [MinLen(1)]
     assert statements_field.inner_type_validators == [Gt(1)]
 
-    assert Factoid.CreateDB.model_fields["numbers"]
-    assert Factoid.CreateDB.model_fields["numbers"].metadata == [MinLen(1)]
+    assert Factoid.UpdateDB.model_fields["numbers"]
+    assert Factoid.UpdateDB.model_fields["numbers"].metadata == [MinLen(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.CreateDB(label="A Factoid", numbers=[])
+        Factoid.UpdateDB(label="A Factoid", numbers=[])
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", numbers=[1])
+        Factoid.UpdateDB(label="A Factoid", numbers=[1])
 
-    Factoid.CreateDB(label="A Factoid", numbers=[2, 2, 2])
+    Factoid.UpdateDB(id=uuid7(), label="A Factoid", numbers=[2, 2, 2])
 
 
 @no_type_check
-def test_document_create_db_in_semantic_spaces_propagated():
+def test_document_update_db_in_semantic_spaces_propagated():
 
     class Negative[T](SemanticSpace[T]):
         pass
@@ -1132,23 +1128,33 @@ def test_document_create_db_in_semantic_spaces_propagated():
 
     initialise()
 
-    assert Factoid.CreateDB.model_fields["semantic_spaces"]
+    assert Factoid.UpdateDB.model_fields["semantic_spaces"]
 
-    assert Factoid.Create
+    assert Factoid.Update
 
-    factoid = Factoid.Create(
+    factoid = Factoid.Update(
         **{
+            "id": uuid7(),
             "label": "A Factoid",
             "statements": [
                 {
+                    "id": uuid7(),
                     "type": "Negative",
                     "contents": [
                         {
+                            "id": uuid7(),
                             "type": "Order",
                             "label": "An Order",
                             "thing_ordered": {
+                                "id": uuid7(),
                                 "type": "Subjunctive",
-                                "contents": [{"type": "Action", "label": "An Action"}],
+                                "contents": [
+                                    {
+                                        "id": uuid7(),
+                                        "type": "Action",
+                                        "label": "An Action",
+                                    }
+                                ],
                             },
                         }
                     ],

@@ -48,7 +48,7 @@ from pangloss_models.model_bases.reified_relation import (
 )
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
-    _SemanticSpaceUpdateDBBAse,
+    _SemanticSpaceUpdateDBBase,
 )
 from pangloss_models.utils import map_validators_to_kwargs
 
@@ -135,7 +135,7 @@ def get_update_db_base_model_type(
     elif issubclass(model, Conjunction):
         return _ConjunctionUpdateDBBase
     elif issubclass(model, SemanticSpace):
-        return _SemanticSpaceUpdateDBBAse
+        return _SemanticSpaceUpdateDBBase
     elif issubclass(model, Embedded):
         return _EmbeddedUpdateDBBAse
     return None
@@ -274,7 +274,6 @@ def build_generic_update_db_model_from_type_option(
 
                             if to.annotated_type._meta.create_inline:
                                 initialise_update_db_model(to.annotated_type)
-                                annotations.append(to.annotated_type.UpdateDB)
                                 annotations.append(to.annotated_type.CreateDB)
 
                     # If relation to Document...
@@ -349,15 +348,16 @@ def build_generic_update_db_model_from_type_option(
                 # Add edge to Document.CreateDB and use
                 if generic_type_option.edge_model:
                     annotations.append(
-                        generic_type_option.annotated_type.CreateDB.apply_edge_model(
-                            generic_type_option.edge_model
-                        )
-                    )
-                    annotations.append(
                         generic_type_option.annotated_type.UpdateDB.apply_edge_model(
                             generic_type_option.edge_model
                         )
                     )
+                    annotations.append(
+                        generic_type_option.annotated_type.CreateDB.apply_edge_model(
+                            generic_type_option.edge_model
+                        )
+                    )
+
                 else:
                     # Add or use Document.CreateDB
                     annotations.append(generic_type_option.annotated_type.UpdateDB)
@@ -457,7 +457,9 @@ def get_embedded_annotation_types(
 ) -> UnionType:
     types = []
     for type_option in field_definition.type_options:
+        types.append(type_option.annotated_type.UpdateDB)
         types.append(type_option.annotated_type.CreateDB)
+
     return Union[*types]  # type: ignore
 
 
@@ -491,7 +493,6 @@ def add_fields_to_update_db_model(
             model.UpdateDB.model_fields[field_name] = FieldInfo(
                 annotation=annotation,  # type: ignore
                 validation_alias=to_camel(field_name),
-                discriminator="type",
             )
 
     # Relation fields

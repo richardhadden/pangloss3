@@ -209,13 +209,13 @@ def recursively_propagate_semantic_space_types(
     spaces to each contained type below that semantic space node"""
     from pangloss_models.model_bases.semantic_space import (
         _SemanticSpaceCreateDBBase,
-        _SemanticSpaceUpdateDBBAse,
+        _SemanticSpaceUpdateDBBase,
     )
 
-    if not isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBAse)):
+    if not isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBase)):
         item.semantic_spaces = [*semantic_spaces]
 
-    if isinstance(item, _SemanticSpaceCreateDBBase):
+    if isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBase)):
         semantic_spaces.append(getattr(item, "type"))
 
     for field_name, field_definition in item._meta.fields.relation_fields.items():
@@ -310,6 +310,7 @@ class _UpdateDBBase(_ActionClass):
                 self._owner, "to_db_update", getattr(self._owner, "to_db", None)
             ):
                 data = f(self.__class__.model_construct(**kwargs))
+
                 if isinstance(data, dict):
                     super().__init__(**data)
                 else:
