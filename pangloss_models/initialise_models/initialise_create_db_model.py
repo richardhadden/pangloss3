@@ -448,14 +448,19 @@ def add_fields_to_create_db_model(
 
     # Literal fields
     for field_name, field_definition in model._meta.fields.literal_fields.items():
+        optional = field_definition.field_required_to_fulfil
         model.CreateDB.model_fields[field_name] = FieldInfo(
             annotation=field_definition.annotated_type,
             validation_alias=to_camel(field_name),
             **map_validators_to_kwargs(field_definition.validators),
         )
 
+        if optional:
+            model.CreateDB.model_fields[field_name].default = None
+
     # Embedded fields
     for field_name, field_definition in model._meta.fields.embedded_fields.items():
+        optional = field_definition.field_required_to_fulfil
         annotation = get_embedded_annotation_types(field_definition)
 
         if annotation:
@@ -465,14 +470,15 @@ def add_fields_to_create_db_model(
                 discriminator="type",
             )
 
+            if optional:
+                model.CreateDB.model_fields[field_name].default = None
+
     # Relation fields
     for field_name, field_definition in model._meta.fields.relation_fields.items():
-        optional = False
-        if (
+        optional = (
             field_definition.field_required_to_fulfil
             and not field_definition.subclasses_parent_fields
-        ):
-            optional = True
+        )
 
         annotation = get_relation_annotation_types(field_definition)
 
@@ -484,13 +490,20 @@ def add_fields_to_create_db_model(
                 **map_validators_to_kwargs(field_definition.validators),
             )
 
+            if optional:
+                model.CreateDB.model_fields[field_name].default = None
+
     # Annotated values
     for (
         field_name,
         field_definition,
     ) in model._meta.fields.annotated_value_fields.items():
+        optional = field_definition.field_required_to_fulfil
         model.CreateDB.model_fields[field_name] = FieldInfo(
             annotation=field_definition.annotated_type,
         )
+
+        if optional:
+            model.CreateDB.model_fields[field_name].default = None
 
     model.CreateDB.model_rebuild(force=True)

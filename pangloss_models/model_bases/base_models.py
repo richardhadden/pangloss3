@@ -1,5 +1,6 @@
 import warnings
 from abc import ABC, abstractmethod
+from collections import ChainMap, defaultdict
 from functools import cache
 from typing import (
     TYPE_CHECKING,
@@ -7,6 +8,7 @@ from typing import (
     ClassVar,
     Generic,
     Literal,
+    NamedTuple,
     Self,
     cast,
     get_origin,
@@ -18,10 +20,12 @@ from pydantic import (
     ConfigDict,
     Field,
     PrivateAttr,
+    ValidationError,
     create_model,
     model_validator,
 )
 from pydantic.alias_generators import to_camel
+from pydantic.fields import FieldInfo
 from pydantic_meta_kit import WithMeta
 
 from pangloss_models.model_registry import ModelRegistry
@@ -230,10 +234,73 @@ def recursively_add_bound_field_values(
             recursively_add_bound_field_values(child_item, binding, value)
 
 
+def build_fulfiled_model[T: _CreateDBBase | _UpdateDBBase](
+    instance: T, fulfiled_classes: list[type[_DeclaredClass]]
+) -> T:
+    if isinstance(instance, _CreateDBBase):
+        metafunction = "Create"
+    elif isinstance(instance, _UpdateDBBase):
+        metafunction = "Update"
+
+    base_models: list[type[_DeclaredClass]] = [instance._owner]
+    base_models.extend(fulfiled_classes)
+
+    names = [c.__name__ for c in base_models]
+
+    if metafunction == "Create":
+        base_db_models = [m.CreateDB for m in base_models]  # type: ignore
+    else:
+        base_db_models = [m.UpdateDB for m in base_models]  # type: ignore
+
+    new_fulfiled_model = create_model(
+        f"({','.join(names)}){metafunction}DB",
+        __base__=tuple(base_db_models),
+        __module__=instance.__class__.__module__,
+    )
+
+    fulfilled_fields = {}
+    fulfilled_data = instance.model_dump()
+
+    fulfillable_models = get_fulfillable_models(instance)
+    for fm, fulfilments in fulfillable_models.items():
+        if fm in fulfiled_classes:
+            for f in fulfilments:
+                fulfilled_fields[f.field_on_class_to_fulfil] = getattr(
+                    fm, f"{metafunction}DB"
+                ).model_fields[f.field_on_class_to_fulfil]
+                fulfilled_data[f.field_on_class_to_fulfil] = getattr(
+                    instance, f.this_field_name
+                )
+
+    instance_fields = instance.__class__.model_fields
+
+    all_new_fields = {
+        **fulfilled_fields,
+        **instance_fields,
+    }
+    for field_name, field_info in all_new_fields.items():
+        new_fulfiled_model.model_fields[field_name] = field_info
+
+    new_fulfiled_model.model_rebuild(force=True)
+
+    # TODO: find a way to copy _meta fields...
+
+    new_instance = new_fulfiled_model(**fulfilled_data)
+
+    return new_instance
+
+
 class _CreateBase(_ActionClass):
     def _to_db_model(self):
-        db_model_instance = self._owner.CreateDB(**self.model_dump())  # type: ignore
+
+        db_model_instance: _CreateDBBase = self._owner.CreateDB(**self.model_dump())  # type: ignore
         recursively_propagate_semantic_space_types(db_model_instance, [])
+
+        if db_model_instance._fulfils_classes:
+            return build_fulfiled_model(
+                db_model_instance, db_model_instance._fulfils_classes
+            )
+
         return db_model_instance
 
     @model_validator(mode="after")
@@ -286,11 +353,63 @@ def recursively_propagate_semantic_space_types(
     return item
 
 
+class Fulfilment(NamedTuple):
+    this_field_name: str
+    class_to_fulfil: type[_DeclaredClass]
+    field_on_class_to_fulfil: str
+
+
+def get_fulfillable_models(self):
+    ffs: list[Fulfilment] = []
+    for field_name, field_info in self._meta.fields.items():
+        for field_fulfilment in field_info.field_required_to_fulfil:
+            ffs.append(
+                Fulfilment(
+                    this_field_name=field_name,
+                    class_to_fulfil=field_fulfilment.fulfils_class,
+                    field_on_class_to_fulfil=field_fulfilment.field_name,
+                )
+            )
+
+    model_fulfilments: dict[type[_DeclaredClass], list[Fulfilment]] = defaultdict(list)
+    for ff in ffs:
+        model_fulfilments[ff.class_to_fulfil].append(ff)
+    return model_fulfilments
+
+
+def get_fulfilled_classes(self, metafunction: Literal["Update"] | Literal["Create"]):
+    model_fulfilments = get_fulfillable_models(self)
+
+    models_fulfiled = []
+    for model_to_fulfil_base, fulfilments in model_fulfilments.items():
+        if metafunction == "Update":
+            model_to_fulfil: type[_UpdateDBBase | _CreateDBBase] = (
+                model_to_fulfil_base.UpdateDB  # type: ignore
+            )
+        elif metafunction == "Create":
+            model_to_fulfil: type[_UpdateDBBase | _CreateDBBase] = (
+                model_to_fulfil_base.CreateDB  # type: ignore
+            )
+        data = self.model_dump()
+        del data["type"]
+        for fulfilment in fulfilments:
+            data[fulfilment.field_on_class_to_fulfil] = getattr(
+                self, fulfilment.this_field_name
+            )
+        try:
+            model_to_fulfil(**data, type=model_to_fulfil_base.__name__)
+            models_fulfiled.append(model_to_fulfil_base)
+        except ValidationError:
+            pass
+
+    return models_fulfiled
+
+
 class _CreateDBBase(_ActionClass):
     _propagation_pass: bool = False
     semantic_spaces: list[str] = Field(default_factory=list)
-
     _labels = property(get_labels_for_db_classes)
+    _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Update"))
 
     @model_validator(mode="before")
     @classmethod
@@ -353,6 +472,7 @@ class _UpdateDBBase(_ActionClass):
     id: UUID
     semantic_spaces: list[str] = Field(default_factory=list)
     _labels = property(get_labels_for_db_classes)
+    _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Update"))
 
     def __init__(self, **kwargs):
 

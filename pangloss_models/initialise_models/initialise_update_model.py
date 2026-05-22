@@ -516,7 +516,8 @@ def add_fields_to_update_model(
         has_inherited_bindings = field_has_inherited_field_bindings(
             fields_to_bind, field_name, field_definition.field_on_model
         )
-        if has_inherited_bindings:
+        optional = field_definition.field_required_to_fulfil
+        if has_inherited_bindings or optional:
             annotation = field_definition.annotated_type | None
         else:
             annotation = field_definition.annotated_type
@@ -529,11 +530,12 @@ def add_fields_to_update_model(
             description=field_definition.description,
             **map_validators_to_kwargs(field_definition.validators),
         )
-        if has_inherited_bindings:
+        if has_inherited_bindings or optional:
             model.model_fields[field_name].default = None
 
     # Embedded fields
     for field_name, field_definition in model._meta.fields.embedded_fields.items():
+        optional = field_definition.field_required_to_fulfil
         if field_definition.db_field:
             continue
 
@@ -542,7 +544,7 @@ def add_fields_to_update_model(
         has_inherited_bindings = field_has_inherited_field_bindings(
             fields_to_bind, field_name, field_definition.field_on_model
         )
-        if has_inherited_bindings:
+        if has_inherited_bindings or optional:
             annotation = annotation | None
 
         if annotation:
@@ -596,6 +598,7 @@ def add_fields_to_update_model(
         field_name,
         field_definition,
     ) in model._meta.fields.annotated_value_fields.items():
+        optional = field_definition.field_required_to_fulfil
         if field_definition.db_field:
             continue
 
@@ -603,7 +606,7 @@ def add_fields_to_update_model(
         has_inherited_bindings = field_has_inherited_field_bindings(
             fields_to_bind, field_name, field_definition.field_on_model
         )
-        if has_inherited_bindings:
+        if has_inherited_bindings or optional:
             annotation = annotation | None
 
         model.model_fields[field_name] = FieldInfo(

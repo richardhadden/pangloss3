@@ -497,12 +497,10 @@ def add_fields_to_update_db_model(
 
     # Relation fields
     for field_name, field_definition in model._meta.fields.relation_fields.items():
-        optional = False
-        if (
+        optional = (
             field_definition.field_required_to_fulfil
             and not field_definition.subclasses_parent_fields
-        ):
-            optional = True
+        )
 
         annotation = get_relation_annotation_types(field_definition)
 
@@ -513,6 +511,9 @@ def add_fields_to_update_db_model(
                 # discriminator="type" if not field_definition.wrapper else None,
                 **map_validators_to_kwargs(field_definition.validators),
             )
+
+            if optional:
+                model.UpdateDB.model_fields[field_name].default = None
 
     # Annotated values
     for (
