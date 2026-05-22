@@ -26,6 +26,7 @@ class AnnotatedValueMeta(BaseMeta):
 class AnnotatedValue[T](_DeclaredClass, WithMeta[AnnotatedValueMeta]):
     """Allows additional literal fields to be bound to a value"""
 
+    __metatype__ = "AnnotatedValue"
     _meta: ClassVar[AnnotatedValueMeta] = AnnotatedValueMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     value: T

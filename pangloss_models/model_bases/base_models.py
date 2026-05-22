@@ -1,7 +1,16 @@
 import warnings
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Generic,
+    Literal,
+    Self,
+    cast,
+    get_origin,
+)
 from uuid import UUID, uuid7
 
 from pydantic import (
@@ -13,6 +22,7 @@ from pydantic import (
     model_validator,
 )
 from pydantic.alias_generators import to_camel
+from pydantic_meta_kit import WithMeta
 
 from pangloss_models.model_registry import ModelRegistry
 
@@ -54,6 +64,19 @@ class DeclaredClassMeta(ABC):
 class _DeclaredClass(_BaseObject):
     _meta: ClassVar[DeclaredClassMeta]
     _depends_on_classes: ClassVar[set[type[_DeclaredClass]]] = PrivateAttr()
+    __metatype__: ClassVar[
+        Literal[
+            "AnnotatedValue",
+            "Conjunction",
+            "Document",
+            "EdgeModel",
+            "Embedded",
+            "Entity",
+            "ReifiedRelation",
+            "ReifiedRelationDocument",
+            "SemanticSpace",
+        ]
+    ]
 
     @classmethod
     def _register(cls):
@@ -81,6 +104,22 @@ class _ActionClass(_BaseObject):
     _owner: ClassVar[type[_DeclaredClass]]
     _meta: ClassVar = MetaGetter[type[Self]]()
     _via: ClassVar[GetItemViaAttrDict[Self]]
+
+    @property
+    def __metatype__(self):
+        return self._owner.__metatype__
+
+    @property
+    def _labels(self):
+        print(self._meta.fields)
+
+        from pangloss_models.utils import get_all_parent_classes
+
+        labels = [self._owner.__name__]
+        labels.extend(c.__name__ for c in get_all_parent_classes(self._owner))
+        labels.append(self.__metatype__)
+
+        return labels
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:

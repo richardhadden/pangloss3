@@ -1113,3 +1113,42 @@ def test_document_create_db_in_semantic_spaces_propagated():
     assert factoid_db.statements[0].contents[0].thing_ordered.contents[
         0
     ].semantic_spaces == ["Negative", "Subjunctive"]
+
+
+@no_type_check
+def test_labels_simple():
+    class Animal(Entity):
+        pass
+
+    class Mammal(Animal):
+        pass
+
+    class Cat(Mammal):
+        pass
+
+    initialise()
+
+    c = Cat.CreateDB(label="A Cat", id=uuid7())
+
+    assert c._labels == ["Cat", "Mammal", "Animal", "Entity"]
+
+
+@no_type_check
+def test_labels_with_trait():
+    class CanBite(Trait):
+        pass
+
+    class Animal(Entity, CanBite):
+        pass
+
+    class Mammal(Animal):
+        pass
+
+    class Cat(Mammal):
+        pass
+
+    initialise()
+
+    c = Cat.CreateDB(label="A Cat", id=uuid7())
+    assert c.__metatype__ == "Entity"
+    assert c._labels == ["Cat", "Mammal", "Animal", "CanBite", "Entity"]

@@ -48,6 +48,7 @@ class _ReifiedRelationUpdateDBBase(_UpdateDBBase):
 
 
 class ReifiedRelation[TTarget](_DeclaredClass):
+    __metatype__ = "ReifiedRelation"
     Meta: ClassVar[type[ReifiedRelationMeta]] = ReifiedRelationMeta
     model_config = ConfigDict(validate_assignment=True)
     _meta: ClassVar[ReifiedRelationMeta] = ReifiedRelationMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
@@ -115,6 +116,7 @@ class _ReifiedRelationDocumentReferenceView(_ReferenceViewBase):
 
 
 class ReifiedRelationDocument[TTarget](_DeclaredClass):
+    __metatype__ = "ReifiedRelationDocument"
     Meta: ClassVar[type[ReifiedRelationDocumentMeta]] = ReifiedRelationDocumentMeta
     model_config = ConfigDict(validate_assignment=True)
     _meta: ClassVar[ReifiedRelationDocumentMeta] = ReifiedRelationDocumentMeta()  # pyright: ignore[reportIncompatibleVariableOverride]

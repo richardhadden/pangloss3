@@ -34,6 +34,7 @@ class EdgeModelMeta(BaseMeta, DeclaredClassMeta):
 
 
 class EdgeModel(_DeclaredClass):
+    __metatype__ = "EdgeModel"
     _meta: ClassVar[EdgeModelMeta] = EdgeModelMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @classmethod

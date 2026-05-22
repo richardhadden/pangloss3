@@ -47,6 +47,7 @@ class _EmbeddedUpdateDBBAse(_UpdateDBBase):
 
 
 class Embedded(_DeclaredClass, WithMeta[EmbeddedMeta]):
+    __metatype__ = "Embedded"
     _meta: ClassVar[EmbeddedMeta] = EmbeddedMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_EmbeddedCreateBase]]

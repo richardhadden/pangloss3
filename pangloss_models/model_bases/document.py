@@ -81,6 +81,7 @@ class DocumentReferenceSetBase(_ReferenceSetBase):
 class Document(_DeclaredClass, WithMeta[DocumentMeta]):
     """An arbitrarily complex object, with nestable subdocuments and relations to Entities"""
 
+    __metatype__ = "Document"
     Meta: ClassVar[type[DocumentMeta]] = DocumentMeta
     model_config = ConfigDict(validate_assignment=True)
 

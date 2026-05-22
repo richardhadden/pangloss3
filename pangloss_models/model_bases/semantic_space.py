@@ -47,6 +47,7 @@ class _SemanticSpaceUpdateDBBase(_UpdateDBBase):
 
 
 class SemanticSpace[TContents](_DeclaredClass):
+    __metatype__ = "SemanticSpace"
     _meta: ClassVar[SemanticSpaceMeta] = SemanticSpaceMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_SemanticSpaceCreateBase]]

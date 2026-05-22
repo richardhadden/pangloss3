@@ -95,6 +95,7 @@ class _EntityUpdateDBBase(_UpdateDBBase):
 
 
 class Entity(_DeclaredClass, WithMeta[EntityMeta]):
+    __metatype__ = "Entity"
     Meta: ClassVar[type[EntityMeta]] = EntityMeta
     _meta: ClassVar[EntityMeta] = EntityMeta(create_with_id=False)  # pyright: ignore[reportIncompatibleVariableOverride]
 

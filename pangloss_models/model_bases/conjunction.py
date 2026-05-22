@@ -47,6 +47,7 @@ class _ConjunctionUpdateDBBase(_UpdateDBBase):
 
 
 class Conjunction(_DeclaredClass, WithMeta[ConjunctionMeta]):
+    __metatype__ = "Conjunction"
     _meta: ClassVar[ConjunctionMeta] = ConjunctionMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_ConjunctionCreateBase]]
