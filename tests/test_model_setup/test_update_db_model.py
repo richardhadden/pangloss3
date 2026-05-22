@@ -21,6 +21,7 @@ from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.conjunction import (
     Conjunction,
     _ConjunctionCreateDBBase,
+    _ConjunctionUpdateDBBase,
 )
 from pangloss_models.model_bases.document import (
     Document,
@@ -37,6 +38,7 @@ from pangloss_models.model_bases.reified_relation import (
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateDBBase,
+    _SemanticSpaceUpdateDBBAse,
 )
 from pangloss_models.model_bases.trait import Trait
 
@@ -579,9 +581,6 @@ def test_relation_with_double_reified_relation():
     assert isinstance(st1_db.is_about_person.target[0], Identification.UpdateDB)
 
 
-"""Tests fixed up to here"""
-
-
 @no_type_check
 def test_relation_with_semantic_space():
     class Negative[T](SemanticSpace[T]):
@@ -595,31 +594,40 @@ def test_relation_with_semantic_space():
 
     initialise()
 
-    statement_field = Factoid.CreateDB.model_fields["has_statement"]
+    statement_field = Factoid.UpdateDB.model_fields["has_statement"]
     assert statement_field
     assert get_origin(statement_field.annotation) is list
     assert get_origin(get_args(statement_field.annotation)[0]) is Annotated
-    # Having peeled away the list and the Annotated...
+
     type_union = get_args(get_args(statement_field.annotation)[0])[0]
     assert isinstance(type_union, UnionType)
     type_union_items = get_args(type_union)
+
     assert set(t.__name__ for t in type_union_items) == set(
-        ["StatementCreateDB", "Negative[Statement]CreateDB"]
+        [
+            "StatementCreateDB",
+            "StatementUpdateDB",
+            "Negative[Statement]CreateDB",
+            "Negative[Statement]UpdateDB",
+        ]
     )
 
-    Negative_Statement_Create: type[_SemanticSpaceCreateDBBase] = [
-        c for c in type_union_items if c.__name__ == "Negative[Statement]CreateDB"
+    NegativeStatementUpdateDB: type[_SemanticSpaceUpdateDBBAse] = [
+        c for c in type_union_items if c.__name__ == "Negative[Statement]UpdateDB"
     ][0]
 
-    assert issubclass(Negative_Statement_Create, _SemanticSpaceCreateDBBase)
+    assert issubclass(NegativeStatementUpdateDB, _SemanticSpaceUpdateDBBAse)
 
-    f = Factoid.CreateDB(
+    f = Factoid.UpdateDB(
+        id=uuid7(),
         label="A Factoid",
         has_statement=[
             {
+                "id": uuid7(),
                 "type": "Negative",
                 "contents": [
                     {
+                        "id": uuid7(),
                         "type": "Statement",
                         "label": "Yohoo!",
                         "text": "Woo",
@@ -632,9 +640,12 @@ def test_relation_with_semantic_space():
     assert f.label == "A Factoid"
     assert f.has_statement[0].type == "Negative"
 
-    assert isinstance(f.has_statement[0], Negative.CreateDB)
+    assert isinstance(f.has_statement[0], Negative.UpdateDB)
     assert f.has_statement[0].contents[0].type == "Statement"
-    assert isinstance(f.has_statement[0].contents[0], Statement.CreateDB)
+    assert isinstance(f.has_statement[0].contents[0], Statement.UpdateDB)
+
+
+"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -652,60 +663,72 @@ def test_relation_with_conjunction():
     initialise()
 
     # Check that Factoid.CreateDB has the has_statements field
-    assert "has_statements" in Factoid.CreateDB.model_fields
+    assert "has_statements" in Factoid.UpdateDB.model_fields
 
     # Check the annotation is a Union
-    has_statements_field = Factoid.CreateDB.model_fields["has_statements"]
+    has_statements_field = Factoid.UpdateDB.model_fields["has_statements"]
     assert has_statements_field
     annotation = has_statements_field.annotation
 
     assert isinstance(annotation, UnionType)
     union_items = get_args(annotation)
-    assert len(union_items) == 2
+
+    assert len(union_items) == 4
     assert set(t.__name__ for t in union_items) == {
         "StatementCreateDB",
+        "StatementUpdateDB",
         "Causes[Statement, Statement]CreateDB",
+        "Causes[Statement, Statement]UpdateDB",
     }
 
-    # Check that Causes has a Create model
-    assert hasattr(Causes, "Create")
-    assert issubclass(Causes.CreateDB, _ConjunctionCreateDBBase)
-    print(union_items)
-    # Check that the specialized Causes[Statement, Statement] has a Create model
+    # Check that Causes has an Update model
+    assert hasattr(Causes, "UpdateDB")
+    assert issubclass(Causes.UpdateDB, _ConjunctionUpdateDBBase)
 
-    causes_statement_create = [
+    # Check that the specialized Causes[Statement, Statement] has an UpdateDB model
+
+    causes_statement_update_db = [
         item
         for item in union_items
-        if item.__name__ == "Causes[Statement, Statement]CreateDB"
+        if item.__name__ == "Causes[Statement, Statement]UpdateDB"
     ][0]  # The Causes[Statement, Statement]Create
-    assert issubclass(causes_statement_create, Causes.CreateDB)
-    assert "cause" in causes_statement_create.model_fields
-    assert "result" in causes_statement_create.model_fields
+    assert issubclass(causes_statement_update_db, Causes.UpdateDB)
+
+    assert "cause" in causes_statement_update_db.model_fields
+    assert "result" in causes_statement_update_db.model_fields
     assert (
-        causes_statement_create.model_fields["cause"].annotation == Statement.CreateDB
+        causes_statement_update_db.model_fields["cause"].annotation
+        == Statement.UpdateDB | Statement.CreateDB
     )
     assert (
-        causes_statement_create.model_fields["result"].annotation == Statement.CreateDB
+        causes_statement_update_db.model_fields["result"].annotation
+        == Statement.UpdateDB | Statement.CreateDB
     )
 
     # Create an instance with a Statement
-    f1 = Factoid.CreateDB(
+    f1 = Factoid.UpdateDB(
+        id=uuid7(),
         label="A Factoid",
         has_statements={
+            "id": uuid7(),
             "type": "Statement",
             "label": "A Statement",
         },
     )
+
     assert f1.label == "A Factoid"
     assert f1.has_statements.type == "Statement"
-    assert isinstance(f1.has_statements, Statement.CreateDB)
+    assert isinstance(f1.has_statements, Statement.UpdateDB)
 
     # Create an instance with a Causes conjunction
-    f2 = Factoid.CreateDB(
+    f2 = Factoid.UpdateDB(
+        id=uuid7(),
         label="Another Factoid",
         has_statements={
+            "id": uuid7(),
             "type": "Causes",
             "cause": {
+                "id": uuid7(),
                 "type": "Statement",
                 "label": "Cause Statement",
             },
@@ -717,9 +740,10 @@ def test_relation_with_conjunction():
     )
     assert f2.label == "Another Factoid"
     assert f2.has_statements.type == "Causes"
-    assert isinstance(f2.has_statements, causes_statement_create)
+    print(f2.has_statements)
+    assert isinstance(f2.has_statements, causes_statement_update_db)
     assert f2.has_statements.cause.type == "Statement"
-    assert isinstance(f2.has_statements.cause, Statement.CreateDB)
+    assert isinstance(f2.has_statements.cause, Statement.UpdateDB)
     assert f2.has_statements.result.type == "Statement"
     assert isinstance(f2.has_statements.result, Statement.CreateDB)
 
