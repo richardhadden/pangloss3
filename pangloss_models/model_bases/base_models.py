@@ -100,6 +100,31 @@ class GetItemViaAttrDict[T](dict):
         return super().__getattribute__(name)
 
 
+def get_labels_for_db_classes(self):
+
+    # print(self._meta.fields)
+
+    from pangloss_models.model_bases.trait import NonHeritableTrait
+    from pangloss_models.utils import get_all_parent_classes, model_is_trait
+
+    labels = [self._owner.__name__]
+
+    parent_labels = []
+    for c in get_all_parent_classes(self._owner):
+        if (
+            model_is_trait(c)
+            and issubclass(c, NonHeritableTrait)
+            and self._owner not in c.__subclasses__()
+        ):
+            pass
+        else:
+            parent_labels.append(c.__name__)
+    labels.extend(parent_labels)
+    labels.append(self.__metatype__)
+
+    return labels
+
+
 class _ActionClass(_BaseObject):
     _owner: ClassVar[type[_DeclaredClass]]
     _meta: ClassVar = MetaGetter[type[Self]]()
@@ -108,18 +133,6 @@ class _ActionClass(_BaseObject):
     @property
     def __metatype__(self):
         return self._owner.__metatype__
-
-    @property
-    def _labels(self):
-        print(self._meta.fields)
-
-        from pangloss_models.utils import get_all_parent_classes
-
-        labels = [self._owner.__name__]
-        labels.extend(c.__name__ for c in get_all_parent_classes(self._owner))
-        labels.append(self.__metatype__)
-
-        return labels
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
@@ -277,6 +290,8 @@ class _CreateDBBase(_ActionClass):
     _propagation_pass: bool = False
     semantic_spaces: list[str] = Field(default_factory=list)
 
+    _labels = property(get_labels_for_db_classes)
+
     @model_validator(mode="before")
     @classmethod
     def ensure_id(cls, data: Any) -> Any:
@@ -337,6 +352,7 @@ class _UpdateBase(_ActionClass):
 class _UpdateDBBase(_ActionClass):
     id: UUID
     semantic_spaces: list[str] = Field(default_factory=list)
+    _labels = property(get_labels_for_db_classes)
 
     def __init__(self, **kwargs):
 

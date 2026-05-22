@@ -36,7 +36,7 @@ from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateDBBase,
 )
-from pangloss_models.model_bases.trait import Trait
+from pangloss_models.model_bases.trait import NonHeritableTrait, Trait
 
 
 @no_type_check
@@ -1145,6 +1145,48 @@ def test_labels_with_trait():
         pass
 
     class Cat(Mammal):
+        pass
+
+    initialise()
+
+    c = Cat.CreateDB(label="A Cat", id=uuid7())
+    assert c.__metatype__ == "Entity"
+    assert c._labels == ["Cat", "Mammal", "Animal", "CanBite", "Entity"]
+
+
+@no_type_check
+def test_labels_with_non_heritable_trait_not_included_when_not_directly_applied():
+    class CanBite(NonHeritableTrait):
+        pass
+
+    class Animal(Entity, CanBite):
+        pass
+
+    class Mammal(Animal):
+        pass
+
+    class Cat(Mammal):
+        pass
+
+    initialise()
+
+    c = Cat.CreateDB(label="A Cat", id=uuid7())
+    assert c.__metatype__ == "Entity"
+    assert c._labels == ["Cat", "Mammal", "Animal", "Entity"]
+
+
+@no_type_check
+def test_labels_with_non_heritable_trait_included_when_directly_applied():
+    class CanBite(NonHeritableTrait):
+        pass
+
+    class Animal(Entity):
+        pass
+
+    class Mammal(Animal):
+        pass
+
+    class Cat(Mammal, CanBite):
         pass
 
     initialise()
