@@ -2,7 +2,7 @@ import warnings
 from abc import ABC, abstractmethod
 from functools import cache
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
-from uuid import UUID
+from uuid import UUID, uuid7
 
 from pydantic import (
     BaseModel,
@@ -237,6 +237,14 @@ def recursively_propagate_semantic_space_types(
 class _CreateDBBase(_ActionClass):
     _propagation_pass: bool = False
     semantic_spaces: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def ensure_id(cls, data: Any) -> Any:
+        """Create an ID for writing in advance;"""
+        if not data.get("id", None):
+            data["id"] = uuid7()
+        return data
 
     def __init__(self, **kwargs):
 
