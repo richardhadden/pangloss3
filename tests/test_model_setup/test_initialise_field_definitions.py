@@ -1409,7 +1409,6 @@ def test_fields_on_heritable_trait():
 
     initialise()
 
-    print(ModelRegistry._model_set)
     assert Agent in ModelRegistry._model_set
     assert Agent._meta
     assert Agent._meta.fields

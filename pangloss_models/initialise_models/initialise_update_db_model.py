@@ -308,8 +308,16 @@ def build_generic_update_db_model_from_type_option(
                                     to
                                 ).apply_edge_model(to.edge_model)
                             )
+                            annotations.append(
+                                build_generic_create_db_model_from_type_option(
+                                    to
+                                ).apply_edge_model(to.edge_model)
+                            )
                         annotations.append(
                             build_generic_update_db_model_from_type_option(to)
+                        )
+                        annotations.append(
+                            build_generic_create_db_model_from_type_option(to)
                         )
             if isinstance(generic_type_option, RelationToEntity):
                 # ... if there is an edge model, add the applied_edge_model

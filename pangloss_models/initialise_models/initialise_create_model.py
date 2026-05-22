@@ -458,8 +458,7 @@ def get_relation_annotation_types(
 
         elif isinstance(type_option, RelationToDocument):
             initialise_create_model(type_option.annotated_type)
-            print(type_option.annotated_type.Create)
-            print(field_bindings)
+
             if field_bindings:
                 create_model = build_bound_field_create_model(
                     type_option.annotated_type.Create, frozenset(field_bindings)
@@ -571,7 +570,7 @@ def add_fields_to_create_model(
     ) in model._meta.fields.relation_fields.items():
         if field_definition.db_field:
             continue
-        print(field_name, field_definition)
+
         annotation = get_relation_annotation_types(
             field_definition,
             field_bindings=[

@@ -634,7 +634,7 @@ def test_relation_with_conjunction():
     # Check that Causes has a Create model
     assert hasattr(Causes, "Create")
     assert issubclass(Causes.Create, _ConjunctionCreateBase)
-    print(union_items)
+
     # Check that the specialized Causes[Statement, Statement] has a Create model
 
     causes_statement_create = [

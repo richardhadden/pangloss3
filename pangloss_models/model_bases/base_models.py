@@ -67,7 +67,7 @@ class MetaGetter[T: type[_ActionClass]]:
     the _DeclaredClass of an _ActionClass"""
 
     def __get__(self, instance, owner: T):
-        return owner._owner._meta
+        return owner._owner._meta  # type: ignore
 
 
 class GetItemViaAttrDict[T](dict):
