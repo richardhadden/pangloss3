@@ -281,6 +281,10 @@ def build_fulfiled_model[T: _CreateDBBase | _UpdateDBBase](
     for field_name, field_info in all_new_fields.items():
         new_fulfiled_model.model_fields[field_name] = field_info
 
+    ## can't just duplicate fields because because...
+    # relations might be pointing some kind of new Create object...
+    # unless that's ... already assigned an ID?
+
     new_fulfiled_model.model_rebuild(force=True)
 
     # TODO: find a way to copy _meta fields...

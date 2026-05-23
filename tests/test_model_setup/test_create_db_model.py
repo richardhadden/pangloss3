@@ -1,4 +1,5 @@
 import datetime
+from ast import Sub
 from types import UnionType
 from typing import Annotated, Literal, get_args, get_origin, no_type_check
 from uuid import UUID, uuid7
@@ -1258,4 +1259,73 @@ def test_fulfils():
     assert a2_db._fulfils_classes == []
 
     assert isinstance(a2_db, Activity.CreateDB)
+    assert not isinstance(a2_db, PersonInPlace.CreateDB)
+
+
+@no_type_check
+def test_fulfils_on_subclass():
+    class PersonInPlace(Document):
+        located_person: Person
+        place: Place
+
+    class Activity(Document, Fulfils[PersonInPlace]):
+        person_responsible: Annotated[
+            Person,
+            RelationConfig(
+                subclasses_parent_fields=[
+                    FieldSubclassing(
+                        field_name="located_person", field_on_model=PersonInPlace
+                    )
+                ]
+            ),
+        ]
+
+    class SubActivity(Activity):
+        pass
+
+    class Person(Entity):
+        pass
+
+    class Place(Entity):
+        pass
+
+    initialise()
+
+    assert (
+        SubActivity.CreateDB.model_fields["person_responsible"].annotation
+        is Person.ReferenceSet
+    )
+
+    assert (
+        SubActivity.CreateDB.model_fields["place"].annotation
+        == Place.ReferenceSet | None
+    )
+
+    assert SubActivity.CreateDB.model_fields["place"].default is None
+
+    a = SubActivity.Create(
+        label="An Activity",
+        person_responsible={"type": "Person", "id": uuid7()},
+        place={"type": "Place", "id": uuid7()},
+    )
+    a_db = a._to_db_model()
+    assert a_db.place.type == "Place"
+    assert a_db.person_responsible.type == "Person"
+    assert a_db.located_person.type == "Person"
+
+    assert a_db._fulfils_classes == [PersonInPlace]
+    assert isinstance(a_db, PersonInPlace.CreateDB)
+    assert isinstance(a_db, SubActivity.CreateDB)
+
+    a2 = SubActivity.Create(
+        label="An Activity",
+        person_responsible={"type": "Person", "id": uuid7()},
+    )
+    a2_db = a2._to_db_model()
+
+    assert a2_db.place is None
+
+    assert a2_db._fulfils_classes == []
+
+    assert isinstance(a2_db, SubActivity.CreateDB)
     assert not isinstance(a2_db, PersonInPlace.CreateDB)
