@@ -11,6 +11,7 @@ from pydantic import AnyHttpUrl, ValidationError
 from pangloss_models import initialise
 from pangloss_models.exceptions import PanglossMetaError
 from pangloss_models.field_definitions import (
+    FieldBinding,
     FieldSubclassing,
     ListFieldDefinition,
     LiteralFieldDefinition,
