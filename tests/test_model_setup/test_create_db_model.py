@@ -1330,3 +1330,40 @@ def test_fulfils_on_subclass():
 
     assert isinstance(a2_db, SubActivity.CreateDB)
     assert not isinstance(a2_db, PersonInPlace.CreateDB)
+
+
+def test_implication():
+
+    class Implication[T](ReifiedRelation[T]):
+        target: T
+
+    class Language(Entity):
+        pass
+
+    class HasKnowledgeOfLanguage(Document):
+        person_with_language_knowledge: Person
+        language: Language
+
+    class UniversityEducation(Document):
+        person_with_university_education: Person
+        implication: Annotated[
+            Implication[HasKnowledgeOfLanguage],
+            RelationConfig(
+                bind_to_child_field=[
+                    FieldBinding(
+                        bound_field="person_with_university_education",
+                        child_fields=["person_with_language_knowledge"],
+                        allowed_type_names=["HasKnowledgeOfLanguage"],
+                    )
+                ]
+            ),
+        ] = Implication(
+            target=HasKnowledgeOfLanguage.with_default_values(
+                language=Language.Create(id="http://www.some_lang_database.com/Latin")
+            )
+        )
+
+    class Person(Entity):
+        pass
+
+    initialise()

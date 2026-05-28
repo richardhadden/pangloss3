@@ -1,4 +1,4 @@
-from typing import Annotated, Any, ClassVar
+from typing import Annotated, Any, ClassVar, Self
 from uuid import UUID, uuid7
 
 from pydantic import ConfigDict, Field, model_validator
@@ -112,3 +112,7 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
         cls._meta._owner_class = cls
 
         cls._register()
+
+    @classmethod
+    def with_default_values(cls, **vals) -> Self:
+        pass
