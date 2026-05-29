@@ -298,7 +298,7 @@ class _CreateBase(_ActionClass):
     def _to_db_model(self):
 
         db_model_instance: _CreateDBBase = self._owner.CreateDB(**self.model_dump())  # type: ignore
-        recursively_propagate_semantic_space_types(db_model_instance, [])
+        recursively_propagate_semantic_space_types(db_model_instance, [], [], None)
 
         if db_model_instance._fulfils_classes:
             return build_fulfiled_model(
@@ -326,10 +326,14 @@ class _CreateBase(_ActionClass):
 
 
 def recursively_propagate_semantic_space_types(
-    item: _CreateDBBase | _UpdateDBBase, semantic_spaces: list[str]
+    item: _CreateDBBase | _UpdateDBBase,
+    semantic_spaces: list[str],
+    semantic_space_labels: list[str],
+    parent: _CreateDBBase | _UpdateDBBase | None,
 ):
     """Takes a _CreateDBBase instance and recursively adds type of semantic
     spaces to each contained type below that semantic space node"""
+    from pangloss_models.model_bases.document import _DocumentCreateDBBase
     from pangloss_models.model_bases.semantic_space import (
         _SemanticSpaceCreateDBBase,
         _SemanticSpaceUpdateDBBase,
@@ -337,21 +341,36 @@ def recursively_propagate_semantic_space_types(
 
     if not isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBase)):
         item.semantic_spaces = [*semantic_spaces]
+        item.semantic_space_labels = [*semantic_space_labels]
 
     if isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBase)):
         semantic_spaces.append(getattr(item, "type"))
+        print(parent)
+        if (
+            parent
+            and isinstance(parent, _DocumentCreateDBBase)
+            and parent._meta.use_in_semantic_space_label  # type: ignore
+        ):
+            print("here")
+            semantic_space_labels.append(
+                f"{getattr(parent, 'type')} -> {getattr(item, 'type')}"
+            )
+        else:
+            semantic_space_labels.append(getattr(item, "type"))
 
     for field_name, field_definition in item._meta.fields.relation_fields.items():
         if related_item := getattr(item, field_name, None):
             if isinstance(related_item, list):
                 for ri in related_item:
                     if isinstance(ri, (_CreateDBBase, _UpdateDBBase)):
-                        recursively_propagate_semantic_space_types(ri, semantic_spaces)
+                        recursively_propagate_semantic_space_types(
+                            ri, semantic_spaces, semantic_space_labels, item
+                        )
 
             else:
                 if isinstance(related_item, (_CreateDBBase, _UpdateDBBase)):
                     recursively_propagate_semantic_space_types(
-                        related_item, semantic_spaces
+                        related_item, semantic_spaces, semantic_space_labels, item
                     )
 
     return item
@@ -412,6 +431,7 @@ def get_fulfilled_classes(self, metafunction: Literal["Update"] | Literal["Creat
 class _CreateDBBase(_ActionClass):
     _propagation_pass: bool = False
     semantic_spaces: list[str] = Field(default_factory=list)
+    semantic_space_labels: list[str] = Field(default_factory=list)
     _labels = property(get_labels_for_db_classes)
     _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Update"))
 
@@ -451,7 +471,7 @@ class _UpdateBase(_ActionClass):
 
     def _to_db_model(self):
         db_model_instance = self._owner.UpdateDB(**self.model_dump())  # type: ignore
-        recursively_propagate_semantic_space_types(db_model_instance, [])
+        recursively_propagate_semantic_space_types(db_model_instance, [], [], None)
         return db_model_instance
 
     @model_validator(mode="after")
@@ -475,6 +495,7 @@ class _UpdateBase(_ActionClass):
 class _UpdateDBBase(_ActionClass):
     id: UUID
     semantic_spaces: list[str] = Field(default_factory=list)
+    semantic_space_labels: list[str] = Field(default_factory=list)
     _labels = property(get_labels_for_db_classes)
     _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Update"))
 

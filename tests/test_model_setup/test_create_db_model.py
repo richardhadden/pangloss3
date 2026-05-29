@@ -1063,6 +1063,7 @@ def test_document_create_db_in_semantic_spaces_propagated():
         pass
 
     class Factoid(Document):
+        _meta = Document.Meta(use_in_semantic_space_label=False)
         statements: list[Order | Negative[Order]]
 
     class Action(Document):
@@ -1115,6 +1116,23 @@ def test_document_create_db_in_semantic_spaces_propagated():
     assert factoid_db.statements[0].contents[0].thing_ordered.contents[
         0
     ].semantic_spaces == ["Negative", "Subjunctive"]
+
+    factoid_db = factoid._to_db_model()
+    assert factoid_db.semantic_space_labels == []
+    assert factoid_db.statements[0].type == "Negative"
+    assert factoid_db.statements[0].semantic_space_labels == []
+    assert factoid_db.statements[0].contents[0].type == "Order"
+    assert factoid_db.statements[0].contents[0].semantic_space_labels == ["Negative"]
+    assert factoid_db.statements[0].contents[0].thing_ordered.type == "Subjunctive"
+    assert (
+        factoid_db.statements[0].contents[0].thing_ordered.semantic_space_labels == []
+    )
+    assert (
+        factoid_db.statements[0].contents[0].thing_ordered.contents[0].type == "Action"
+    )
+    assert factoid_db.statements[0].contents[0].thing_ordered.contents[
+        0
+    ].semantic_space_labels == ["Negative", "Order -> Subjunctive"]
 
 
 @no_type_check

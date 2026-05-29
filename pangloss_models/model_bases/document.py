@@ -34,6 +34,7 @@ class DocumentMeta(BaseMeta, DeclaredClassMeta):
     reference_view_extra_fields: Annotated[list[str], MetaRules.ACCUMULATE] = Field(
         default_factory=list
     )
+    use_in_semantic_space_label: bool = True
     field_definitions: ModelFields = Field(default_factory=ModelFields)
     _owner_class: type[Document] | InheritValue = InheritValue.AS_DEFAULT
 
