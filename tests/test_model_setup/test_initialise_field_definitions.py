@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from pprint import PrettyPrinter
 from types import NoneType, UnionType
 from typing import Annotated, Optional, TypeVar, get_args, get_origin
 
@@ -14,6 +15,7 @@ from pangloss_models.field_definitions import (
     FieldBinding,
     FieldFulfilment,
     FieldSubclassing,
+    IncomingRelationDefinition,
     ListFieldDefinition,
     LiteralFieldDefinition,
     LiteralTypeVarFieldDefinition,
@@ -1948,4 +1950,44 @@ def test_field_definition_with_field_binding():
     assert isinstance(statement_action_field, RelationFieldDefinition)
     assert statement_action_field.bind_to_child_field == [
         FieldBinding(bound_field="when", child_fields=["action_when"])
+    ]
+
+
+def test_incoming_relations():
+    class Identification[T](ReifiedRelation[T]):
+        pass
+
+    class Intermediate[T](ReifiedRelationDocument[T]):
+        pass
+
+    class Statement(Document):
+        involves_person: Person
+        involves_person_via_reified: Intermediate[Identification[Person | Cat]]
+
+    class Person(Entity):
+        pass
+
+    class Cat(Entity):
+        pass
+
+    initialise()
+
+    assert Person._meta.field_definitions.incoming_fields[
+        "involves_person_reverse"
+    ] == [
+        IncomingRelationDefinition(
+            source=Statement,
+            field_definition=Statement._meta.fields.relation_fields["involves_person"],
+        )
+    ]
+
+    assert Person._meta.field_definitions.incoming_fields[
+        "involves_person_via_reified_reverse"
+    ] == [
+        IncomingRelationDefinition(
+            source=Statement,
+            field_definition=Statement._meta.fields.relation_fields[
+                "involves_person_via_reified"
+            ],
+        )
     ]

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, runtime_checkable
@@ -245,6 +246,12 @@ class RelationToTypeVar(RelationOption):
     annotated_type: TypeVar  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
+@dataclass(frozen=True, kw_only=True)
+class IncomingRelationDefinition:
+    source: type[_DeclaredClass]
+    field_definition: RelationFieldDefinition
+
+
 class ModelFieldDict[K, V](dict[K, V]):
     @property
     def typevar_fields(self) -> dict[K, RelationFieldDefinition]:
@@ -304,3 +311,7 @@ class ModelFields:
 
     def add_field(self, name: str, field_definition: FieldDefinition):
         self.fields[name] = field_definition
+
+    incoming_fields: dict[str, list] = dataclass_field(
+        default_factory=lambda: defaultdict(list)
+    )

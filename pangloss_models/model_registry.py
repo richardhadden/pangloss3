@@ -201,6 +201,9 @@ class ModelRegistry:
         Override or monkey-patch this.
         """
 
+        from pangloss_models.initialise_models.initalise_incoming_relation_definitions import (
+            initialise_incoming_relation_definitions,
+        )
         from pangloss_models.initialise_models.initialise_create_db_model import (
             add_fields_to_create_db_model,
             initialise_create_db_model,
@@ -239,6 +242,19 @@ class ModelRegistry:
                 raise e
             except Exception as e:
                 print(f"Exception on init fields of model {model.__name__}", e)
+
+        for model in cls._model_dict.values():
+            if hasattr(model, "__metatype__") and model.__metatype__ in [
+                "Document",
+                "Entity",
+                "ReifiedRelationDocument",
+            ]:
+                try:
+                    initialise_incoming_relation_definitions(model)
+                except PanglossModelError as e:
+                    raise e
+                except Exception as e:
+                    print(f"Exception on init fields of model {model.__name__}", e)
 
         for model in chain(order, cyclic):
             initialise_reference_set_model(model)
