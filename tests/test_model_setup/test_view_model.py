@@ -23,6 +23,7 @@ from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.conjunction import (
     Conjunction,
     _ConjunctionCreateBase,
+    _ConjunctionViewBase,
 )
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.edge_model import EdgeModel
@@ -37,6 +38,7 @@ from pangloss_models.model_bases.reified_relation import (
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
     _SemanticSpaceCreateBase,
+    _SemanticSpaceViewBase,
 )
 from pangloss_models.model_bases.trait import Trait
 
@@ -478,9 +480,6 @@ def test_relation_with_double_reified_relation():
     )
 
 
-"""Tests fixed up to here"""
-
-
 @no_type_check
 def test_relation_with_semantic_space():
     class Negative[T](SemanticSpace[T]):
@@ -494,7 +493,7 @@ def test_relation_with_semantic_space():
 
     initialise()
 
-    statement_field = Factoid.Create.model_fields["has_statement"]
+    statement_field = Factoid.View.model_fields["has_statement"]
     assert statement_field
     assert get_origin(statement_field.annotation) is list
     assert get_origin(get_args(statement_field.annotation)[0]) is Annotated
@@ -503,22 +502,25 @@ def test_relation_with_semantic_space():
     assert isinstance(type_union, UnionType)
     type_union_items = get_args(type_union)
     assert set(t.__name__ for t in type_union_items) == set(
-        ["StatementCreate", "Negative[Statement]Create"]
+        ["StatementView", "Negative[Statement]View"]
     )
 
-    Negative_Statement_Create: type[_SemanticSpaceCreateBase] = [
-        c for c in type_union_items if c.__name__ == "Negative[Statement]Create"
+    Negative_Statement_View: type[_SemanticSpaceViewBase] = [
+        c for c in type_union_items if c.__name__ == "Negative[Statement]View"
     ][0]
 
-    assert issubclass(Negative_Statement_Create, _SemanticSpaceCreateBase)
+    assert issubclass(Negative_Statement_View, _SemanticSpaceViewBase)
 
-    f = Factoid(
+    f = Factoid.View(
+        id=uuid7(),
         label="A Factoid",
         has_statement=[
             {
+                "id": uuid7(),
                 "type": "Negative",
                 "contents": [
                     {
+                        "id": uuid7(),
                         "type": "Statement",
                         "label": "Yohoo!",
                         "text": "Woo",
@@ -530,9 +532,9 @@ def test_relation_with_semantic_space():
 
     assert f.label == "A Factoid"
     assert f.has_statement[0].type == "Negative"
-    assert isinstance(f.has_statement[0], Negative.Create)
+    assert isinstance(f.has_statement[0], Negative.View)
     assert f.has_statement[0].contents[0].type == "Statement"
-    assert isinstance(f.has_statement[0].contents[0], Statement.Create)
+    assert isinstance(f.has_statement[0].contents[0], Statement.View)
 
 
 @no_type_check
@@ -550,10 +552,10 @@ def test_relation_with_conjunction():
     initialise()
 
     # Check that Factoid.Create has the has_statements field
-    assert "has_statements" in Factoid.Create.model_fields
+    assert "has_statements" in Factoid.View.model_fields
 
     # Check the annotation is a Union
-    has_statements_field = Factoid.Create.model_fields["has_statements"]
+    has_statements_field = Factoid.View.model_fields["has_statements"]
     assert has_statements_field
     annotation = has_statements_field.annotation
 
@@ -561,49 +563,55 @@ def test_relation_with_conjunction():
     union_items = get_args(annotation)
     assert len(union_items) == 2
     assert set(t.__name__ for t in union_items) == {
-        "StatementCreate",
-        "Causes[Statement, Statement]Create",
+        "StatementView",
+        "Causes[Statement, Statement]View",
     }
 
     # Check that Causes has a Create model
-    assert hasattr(Causes, "Create")
-    assert issubclass(Causes.Create, _ConjunctionCreateBase)
+    assert hasattr(Causes, "View")
+    assert issubclass(Causes.View, _ConjunctionViewBase)
 
     # Check that the specialized Causes[Statement, Statement] has a Create model
 
-    causes_statement_create = [
+    causes_statement_view = [
         item
         for item in union_items
-        if item.__name__ == "Causes[Statement, Statement]Create"
-    ][0]  # The Causes[Statement, Statement]Create
-    assert issubclass(causes_statement_create, Causes.Create)
-    assert "cause" in causes_statement_create.model_fields
-    assert "result" in causes_statement_create.model_fields
-    assert causes_statement_create.model_fields["cause"].annotation == Statement.Create
-    assert causes_statement_create.model_fields["result"].annotation == Statement.Create
+        if item.__name__ == "Causes[Statement, Statement]View"
+    ][0]  # The Causes[Statement, Statement]View
+    assert issubclass(causes_statement_view, Causes.View)
+    assert "cause" in causes_statement_view.model_fields
+    assert "result" in causes_statement_view.model_fields
+    assert causes_statement_view.model_fields["cause"].annotation == Statement.View
+    assert causes_statement_view.model_fields["result"].annotation == Statement.View
 
     # Create an instance with a Statement
-    f1 = Factoid.Create(
+    f1 = Factoid.View(
+        id=uuid7(),
         label="A Factoid",
         has_statements={
+            "id": uuid7(),
             "type": "Statement",
             "label": "A Statement",
         },
     )
     assert f1.label == "A Factoid"
     assert f1.has_statements.type == "Statement"
-    assert isinstance(f1.has_statements, Statement.Create)
+    assert isinstance(f1.has_statements, Statement.View)
 
     # Create an instance with a Causes conjunction
-    f2 = Factoid.Create(
+    f2 = Factoid.View(
+        id=uuid7(),
         label="Another Factoid",
         has_statements={
+            "id": uuid7(),
             "type": "Causes",
             "cause": {
+                "id": uuid7(),
                 "type": "Statement",
                 "label": "Cause Statement",
             },
             "result": {
+                "id": uuid7(),
                 "type": "Statement",
                 "label": "Result Statement",
             },
@@ -611,11 +619,11 @@ def test_relation_with_conjunction():
     )
     assert f2.label == "Another Factoid"
     assert f2.has_statements.type == "Causes"
-    assert isinstance(f2.has_statements, causes_statement_create)
+    assert isinstance(f2.has_statements, causes_statement_view)
     assert f2.has_statements.cause.type == "Statement"
-    assert isinstance(f2.has_statements.cause, Statement.Create)
+    assert isinstance(f2.has_statements.cause, Statement.View)
     assert f2.has_statements.result.type == "Statement"
-    assert isinstance(f2.has_statements.result, Statement.Create)
+    assert isinstance(f2.has_statements.result, Statement.View)
 
 
 @no_type_check
@@ -640,17 +648,19 @@ def test_relation_to_trait():
 
     initialise()
 
-    thing_carried_out_by_field = Statement.Create.model_fields["thing_carried_out_by"]
+    thing_carried_out_by_field = Statement.View.model_fields["thing_carried_out_by"]
     assert (
         thing_carried_out_by_field.annotation
-        == Person.ReferenceSet
-        | Group.ReferenceSet
-        | Organisation.ReferenceSet
-        | Posse.ReferenceSet
+        == Person.ReferenceView
+        | Group.ReferenceView
+        | Organisation.ReferenceView
+        | Posse.ReferenceView
     )
 
-    st = Statement(
-        label="A Statement", thing_carried_out_by={"type": "Group", "id": uuid7()}
+    st = Statement.View(
+        id=uuid7(),
+        label="A Statement",
+        thing_carried_out_by={"type": "Group", "id": uuid7(), "label": "A Group"},
     )
 
 
@@ -664,17 +674,21 @@ def test_relation_to_embedded():
 
     initialise()
 
-    assert Date.Create.model_fields["when"].annotation is datetime.datetime
-    assert Date.Create.model_fields["type"].annotation == Literal["Date"]
+    assert Date.View.model_fields["when"].annotation is datetime.datetime
+    assert Date.View.model_fields["type"].annotation == Literal["Date"]
 
     assert Statement._meta.fields["date"]
 
-    assert Statement.Create.model_fields["date"]
+    assert Statement.View.model_fields["date"]
 
-    st = Statement(label="A Statement", date={"type": "Date", "when": "2019-01-01"})
+    st = Statement.View(
+        id=uuid7(),
+        label="A Statement",
+        date={"type": "Date", "when": "2019-01-01", "id": uuid7()},
+    )
 
     assert st.label == "A Statement"
-    assert isinstance(st.date, Date.Create)
+    assert isinstance(st.date, Date.View)
     assert st.date.type == "Date"
     assert isinstance(st.date.when, datetime.datetime)
     assert st.date.when == datetime.datetime(2019, 1, 1)
@@ -692,11 +706,11 @@ def test_annotated_value():
 
     assert WithCertainty[str].model_fields["value"].annotation is str
 
-    assert Naming.Create.model_fields["name"].annotation == WithCertainty[str]
+    assert Naming.View.model_fields["name"].annotation == WithCertainty[str]
 
 
 @no_type_check
-def test_db_field_not_in_create_model():
+def test_db_field_not_in_view_model():
 
     class Statement(Document):
         some_field: int
@@ -714,12 +728,12 @@ def test_db_field_not_in_create_model():
 
     initialise()
 
-    assert "some_field" in Statement.Create.model_fields
-    assert "db_int_field" not in Statement.Create.model_fields
-    assert "person_field" in Statement.Create.model_fields
-    assert "db_person_field" not in Statement.Create.model_fields
-    assert "embedded_field" in Statement.Create.model_fields
-    assert "db_embedded_field" not in Statement.Create.model_fields
+    assert "some_field" in Statement.View.model_fields
+    assert "db_int_field" not in Statement.View.model_fields
+    assert "person_field" in Statement.View.model_fields
+    assert "db_person_field" not in Statement.View.model_fields
+    assert "embedded_field" in Statement.View.model_fields
+    assert "db_embedded_field" not in Statement.View.model_fields
 
 
 @no_type_check
@@ -747,346 +761,14 @@ def test_inherited_from_fulfils_is_optional():
     initialise()
 
     assert (
-        Activity.Create.model_fields["person_responsible"].annotation
-        is Person.ReferenceSet
+        Activity.View.model_fields["person_responsible"].annotation
+        is Person.ReferenceView
     )
 
-    assert Activity.Create.model_fields["place"].annotation == Place.ReferenceSet | None
+    assert Activity.View.model_fields["place"].annotation == Place.ReferenceView | None
 
 
-def test_create_model_with_field_binding():
-    class Action(Document):
-        action_when: datetime.date
-        action_when_optional: datetime.date | None
-
-    class Statement(Document):
-        when: datetime.date
-        action: Annotated[
-            Action,
-            RelationConfig(
-                bind_to_child_field=[
-                    FieldBinding(
-                        bound_field="when",
-                        child_fields=["action_when", "action_when_optional"],
-                        allowed_type_names=["Action"],
-                    )
-                ]
-            ),
-        ]
-
-    initialise()
-
-    action_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
-    assert (
-        action_model.model_fields["action_when_optional"].annotation
-        == datetime.date | None
-    )
-
-
-@no_type_check
-def test_create_model_with_field_binding_through_intermediate():
-
-    class Action(Document):
-        action_when: datetime.date
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Statement(Document):
-        when: datetime.date
-        action: Annotated[
-            Negative[Action],
-            RelationConfig(
-                bind_to_child_field=[
-                    FieldBinding(
-                        bound_field="when",
-                        child_fields=["action_when"],
-                        allowed_type_names=["Action"],
-                    )
-                ]
-            ),
-        ]
-
-    initialise()
-
-    negative_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
-
-    negative_contents_fields = negative_model.model_fields["contents"]
-    assert get_origin(negative_contents_fields.annotation) is list
-    annotated_action_model = get_args(negative_contents_fields.annotation)[0]
-
-    assert get_origin(annotated_action_model) is Annotated
-    action_model = get_args(annotated_action_model)[0]
-    assert action_model
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
-
-    st = Statement.Create(
-        label="A Statement",
-        when=datetime.date.today(),
-        action={
-            "type": "Negative",
-            "contents": [
-                {
-                    "type": "Action",
-                    "label": "An action",
-                }
-            ],
-        },
-    )
-
-    assert st.action.contents[0].action_when == datetime.date.today()
-
-
-@no_type_check
-def test_create_model_with_field_binding_through_intermediate_with_transform():
-
-    class Action(Document):
-        action_when: datetime.date
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Statement(Document):
-        when: datetime.date
-        action: Annotated[
-            Negative[Action],
-            RelationConfig(
-                bind_to_child_field=[
-                    FieldBinding(
-                        bound_field="when",
-                        child_fields=["action_when"],
-                        allowed_type_names=["Action"],
-                        converter=lambda x: x + datetime.timedelta(days=1),
-                    )
-                ]
-            ),
-        ]
-
-    initialise()
-
-    negative_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
-
-    negative_contents_fields = negative_model.model_fields["contents"]
-    assert get_origin(negative_contents_fields.annotation) is list
-    annotated_action_model = get_args(negative_contents_fields.annotation)[0]
-
-    assert get_origin(annotated_action_model) is Annotated
-    action_model = get_args(annotated_action_model)[0]
-    assert action_model
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
-
-    st = Statement.Create(
-        label="A Statement",
-        when=datetime.date.today(),
-        action={
-            "type": "Negative",
-            "contents": [
-                {
-                    "type": "Action",
-                    "label": "An action",
-                }
-            ],
-        },
-    )
-
-    assert st.action.contents[
-        0
-    ].action_when == datetime.date.today() + datetime.timedelta(days=1)
-
-    # Check we can convert to DB model, which will be proof of pudding
-    st._to_db_model()
-
-
-@no_type_check
-def test_create_model_with_field_binding_through_intermediate_ignoring_type():
-
-    class Action(Document):
-        action_when: datetime.date
-        subaction: SubAction
-
-    class SubAction(Document):
-        action_when: datetime.date
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Statement(Document):
-        when: datetime.date
-        action: Annotated[
-            Negative[Action],
-            RelationConfig(
-                bind_to_child_field=[
-                    FieldBinding(
-                        bound_field="when",
-                        child_fields=["action_when"],
-                        allowed_type_names=["SubAction"],
-                        converter=lambda x: x + datetime.timedelta(days=1),
-                    ),
-                ]
-            ),
-        ]
-
-    initialise()
-
-    negative_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
-
-    negative_contents_fields = negative_model.model_fields["contents"]
-    assert get_origin(negative_contents_fields.annotation) is list
-    annotated_action_model = get_args(negative_contents_fields.annotation)[0]
-
-    assert get_origin(annotated_action_model) is Annotated
-    action_model = get_args(annotated_action_model)[0]
-    assert action_model
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-
-    assert action_model.model_fields["action_when"].annotation == datetime.date
-
-    # Test that not providing Action.action_when raises error as binding only
-    # applied to SubAction
-    with pytest.raises(ValidationError):
-        Statement.Create(
-            label="A Statement",
-            when=datetime.date.today(),
-            action={
-                "type": "Negative",
-                "contents": [
-                    {
-                        "type": "Action",
-                        "label": "An action",
-                    }
-                ],
-            },
-        )
-
-    st = Statement.Create(
-        label="A Statement",
-        when=datetime.date.today(),
-        action={
-            "type": "Negative",
-            "contents": [
-                {
-                    "type": "Action",
-                    "label": "An action",
-                    "action_when": datetime.date.today(),
-                    "subaction": {
-                        "type": "SubAction",
-                        "label": "A SubAction",
-                    },
-                }
-            ],
-        },
-    )
-
-    assert st.action.contents[0].action_when == datetime.date.today()
-
-    assert st.action.contents[
-        0
-    ].subaction.action_when == datetime.date.today() + datetime.timedelta(days=1)
-
-
-@no_type_check
-def test_create_model_with_field_binding_through_intermediate_ignoring_type_does_not_override_given_value():
-
-    class Action(Document):
-        action_when: datetime.date
-        subaction: SubAction
-
-    class SubAction(Document):
-        action_when: datetime.date
-
-    class Negative[T](SemanticSpace[T]):
-        pass
-
-    class Statement(Document):
-        when: datetime.date
-        action: Annotated[
-            Negative[Action],
-            RelationConfig(
-                bind_to_child_field=[
-                    FieldBinding(
-                        bound_field="when",
-                        child_fields=["action_when"],
-                        allowed_type_names=["Action", "SubAction"],
-                        converter=lambda x: x + datetime.timedelta(days=1),
-                    ),
-                ]
-            ),
-        ]
-
-    initialise()
-
-    negative_model = Statement.Create.model_fields["action"].annotation
-    assert isclass(negative_model) and issubclass(negative_model, Negative.Create)
-
-    negative_contents_fields = negative_model.model_fields["contents"]
-    assert get_origin(negative_contents_fields.annotation) is list
-    annotated_action_model = get_args(negative_contents_fields.annotation)[0]
-
-    assert get_origin(annotated_action_model) is Annotated
-    action_model = get_args(annotated_action_model)[0]
-    assert action_model
-    assert isclass(action_model) and issubclass(action_model, Action.Create)
-
-    assert action_model.model_fields["action_when"].annotation == datetime.date | None
-
-    st = Statement.Create(
-        label="A Statement",
-        when=datetime.date.today(),
-        action={
-            "type": "Negative",
-            "contents": [
-                {
-                    "type": "Action",
-                    "label": "An action",
-                    "action_when": datetime.date.today(),
-                    "subaction": {
-                        "type": "SubAction",
-                        "label": "A SubAction",
-                    },
-                }
-            ],
-        },
-    )
-
-    assert st.action.contents[0].action_when == datetime.date.today()
-
-    assert st.action.contents[
-        0
-    ].subaction.action_when == datetime.date.today() + datetime.timedelta(days=1)
-
-
-@no_type_check
-def test_relation_validator():
-    class Factoid(Document):
-        statements: Annotated[
-            list[Action],
-            MinLen(1),
-        ]
-
-    class Action(Document):
-        pass
-
-    initialise()
-
-    statements_field = Factoid._meta.fields["statements"]
-    assert isinstance(statements_field, RelationFieldDefinition)
-
-    assert statements_field.validators == [MinLen(1)]
-
-    assert Factoid.Create.model_fields["statements"]
-    assert Factoid.Create.model_fields["statements"].metadata == [MinLen(1)]
-
-    with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", statements=[])
+"""Tests fixed up to here"""
 
 
 @no_type_check
@@ -1104,11 +786,11 @@ def test_literal_validators():
 
     assert statements_field.validators == [Gt(1)]
 
-    assert Factoid.Create.model_fields["number"]
-    assert Factoid.Create.model_fields["number"].metadata == [Gt(1)]
+    assert Factoid.View.model_fields["number"]
+    assert Factoid.View.model_fields["number"].metadata == [Gt(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", number=1)
+        Factoid.View(id=uuid7(), label="A Factoid", number=1)
 
 
 @no_type_check
@@ -1124,13 +806,13 @@ def test_list_validators():
     assert statements_field.validators == [MinLen(1)]
     assert statements_field.inner_type_validators == [Gt(1)]
 
-    assert Factoid.Create.model_fields["numbers"]
-    assert Factoid.Create.model_fields["numbers"].metadata == [MinLen(1)]
+    assert Factoid.View.model_fields["numbers"]
+    assert Factoid.View.model_fields["numbers"].metadata == [MinLen(1)]
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", numbers=[])
+        Factoid.View(id=uuid7(), label="A Factoid", numbers=[])
 
     with pytest.raises(ValidationError):
-        Factoid.Create(label="A Factoid", numbers=[1])
+        Factoid.View(id=uuid7(), label="A Factoid", numbers=[1])
 
-    Factoid.Create(label="A Factoid", numbers=[2, 2, 2])
+    Factoid.View(id=uuid7(), label="A Factoid", numbers=[2, 2, 2])
