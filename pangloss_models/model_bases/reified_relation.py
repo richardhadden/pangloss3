@@ -10,9 +10,11 @@ from pangloss_models.field_definitions import (
 )
 from pangloss_models.model_bases.base_models import (
     DeclaredClassMeta,
+    _BaseObject,
     _CreateBase,
     _CreateDBBase,
     _DeclaredClass,
+    _HeadViewBase,
     _ReferenceViewBase,
     _UpdateBase,
     _UpdateDBBase,
@@ -122,8 +124,20 @@ class _ReifiedRelationDocumentReferenceViewBase(_ReferenceViewBase):
     label: str
 
 
+class _ReifiedRelationDocumentViewAPIMeta(_BaseObject):
+    semantic_spaces: list[str] = Field(default_factory=list)
+    semantic_space_labels: list[str] = Field(default_factory=list)
+
+
 class _ReifiedRelationDocumentViewBase(_ViewBase):
     label: str
+    meta: _ReifiedRelationDocumentViewAPIMeta = Field(
+        default_factory=_ReifiedRelationDocumentViewAPIMeta
+    )
+
+
+class _ReifiedRelationDocumentHeadViewBase(_HeadViewBase):
+    pass
 
 
 class ReifiedRelationDocument[TTarget](_DeclaredClass):
@@ -139,6 +153,7 @@ class ReifiedRelationDocument[TTarget](_DeclaredClass):
     ReferenceView: ClassVar[type[_ReifiedRelationDocumentReferenceViewBase]]
 
     View: ClassVar[type[_ReifiedRelationDocumentViewBase]]
+    HeadView: ClassVar[type[_ReifiedRelationDocumentHeadViewBase]]
 
     target: list[TTarget]
 

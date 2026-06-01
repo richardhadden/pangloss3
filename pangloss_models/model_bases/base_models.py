@@ -1,17 +1,16 @@
+import datetime
 import warnings
 from abc import ABC, abstractmethod
-from collections import ChainMap, defaultdict
+from collections import defaultdict
 from functools import cache
 from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
-    Generic,
     Literal,
     NamedTuple,
     Self,
     cast,
-    get_origin,
 )
 from uuid import UUID, uuid7
 
@@ -25,8 +24,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic.alias_generators import to_camel
-from pydantic.fields import FieldInfo
-from pydantic_meta_kit import WithMeta
 
 from pangloss_models.model_registry import ModelRegistry
 
@@ -44,8 +41,6 @@ class _BaseObject(BaseModel):
     model_config = ConfigDict(
         arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True
     )
-
-    _initialised: ClassVar[bool] = False
 
 
 class DeclaredClassMeta(ABC):
@@ -464,6 +459,18 @@ class _CreateDBBase(_ActionClass):
 
 class _ViewBase(_ActionClass):
     id: UUID
+
+
+class APIHeadMeta(_BaseObject):
+    created_by: str
+    created_when: datetime.datetime
+    updated_by: str
+    updated_when: datetime.datetime
+
+
+class _HeadViewBase(_ActionClass):
+    id: UUID
+    meta: APIHeadMeta
 
 
 class _UpdateBase(_ActionClass):

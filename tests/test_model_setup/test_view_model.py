@@ -816,3 +816,7 @@ def test_list_validators():
         Factoid.View(id=uuid7(), label="A Factoid", numbers=[1])
 
     Factoid.View(id=uuid7(), label="A Factoid", numbers=[2, 2, 2])
+
+
+def test_meta_on_view_model():
+    assert False

@@ -11,9 +11,11 @@ from pangloss_models.field_definitions import (
 )
 from pangloss_models.model_bases.base_models import (
     DeclaredClassMeta,
+    _BaseObject,
     _CreateBase,
     _CreateDBBase,
     _DeclaredClass,
+    _HeadViewBase,
     _ReferenceSetBase,
     _ReferenceViewBase,
     _UpdateBase,
@@ -59,8 +61,17 @@ class _DocumentCreateDBBase(_CreateDBBase):
         return data
 
 
+class _DocumentViewAPIMeta(_BaseObject):
+    semantic_spaces: list[str] = Field(default_factory=list)
+    semantic_space_labels: list[str] = Field(default_factory=list)
+
+
 class _DocumentViewBase(_ViewBase):
-    pass  # in_semantic_space: list[str] = Field(default_factory=list)
+    meta: _DocumentViewAPIMeta = Field(default_factory=_DocumentViewAPIMeta)
+
+
+class _DocumentHeadViewBase(_HeadViewBase):
+    pass
 
 
 class _DocumentUpdateBase(_UpdateBase):
@@ -94,6 +105,7 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
     Update: ClassVar[type[_DocumentUpdateBase]]
     UpdateDB: ClassVar[type[_DocumentUpdateDBBase]]
     View: ClassVar[type[_DocumentViewBase]]
+    HeadView: ClassVar[type[_DocumentHeadViewBase]]
 
     ReferenceView: ClassVar[type[DocumentReferenceViewBase]]
     ReferenceSetBase: ClassVar[type[DocumentReferenceSetBase]]
