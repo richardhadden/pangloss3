@@ -32,8 +32,7 @@ class _Trait(_DeclaredClass):
 
 class Trait[T: Document | Entity](_Trait):
     Meta: ClassVar[Any] = TraitMeta
-    # _meta: ClassVar[EntityMeta] = TraitMeta[Self]()  # pyright: ignore[reportAssignmentType, reportIncompatibleVariableOverride]  # ty:ignore[invalid-assignment]
-    _meta: Any
+    _meta: Any  # type: ignore
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs) -> None:
@@ -50,7 +49,7 @@ class Trait[T: Document | Entity](_Trait):
 
 class NonHeritableTrait(_Trait):
     Meta: ClassVar[Any] = TraitMeta
-    _meta: Any  # pyright: ignore[reportAssignmentType, reportIncompatibleVariableOverride]  # ty:ignore[invalid-assignment]
+    _meta: Any  # type: ignore
 
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs) -> None:

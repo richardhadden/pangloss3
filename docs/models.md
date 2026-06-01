@@ -33,10 +33,10 @@ Inbound types:
 - ~~ReferenceCreate~~ Just use Create
 
 Outbound types:
-- UpdateView
+- View
     - ID, Label, _meta
 - Head View
-    - ID, Label, _meta, incoming relations
+    - ID, Label, _meta, incoming relations -- also for editing
 - ReferenceView
     - ID, Label, containing doc ref/type
 

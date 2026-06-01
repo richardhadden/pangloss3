@@ -629,7 +629,9 @@ def map_validators_to_kwargs(validators: list[BaseMetadata]):
 
 
 def field_has_inherited_field_bindings(
-    field_bindings: list[FieldBinding], field_name: str, model: type[_DeclaredClass]
+    field_bindings: frozenset[FieldBinding],
+    field_name: str,
+    model: type[_DeclaredClass],
 ) -> bool:
     for field_binding in field_bindings:
         if (

@@ -90,9 +90,10 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
 
     Create: ClassVar[type[_DocumentCreateBase]]
     CreateDB: ClassVar[type[_DocumentCreateDBBase]]
-    View: ClassVar[type[_DocumentViewBase]]
+
     Update: ClassVar[type[_DocumentUpdateBase]]
     UpdateDB: ClassVar[type[_DocumentUpdateDBBase]]
+    View: ClassVar[type[_DocumentViewBase]]
 
     ReferenceView: ClassVar[type[DocumentReferenceViewBase]]
     ReferenceSetBase: ClassVar[type[DocumentReferenceSetBase]]

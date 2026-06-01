@@ -16,6 +16,7 @@ from pangloss_models.model_bases.base_models import (
     _ReferenceViewBase,
     _UpdateBase,
     _UpdateDBBase,
+    _ViewBase,
 )
 
 
@@ -47,6 +48,10 @@ class _ReifiedRelationUpdateDBBase(_UpdateDBBase):
     pass
 
 
+class _ReifiedRelationViewBase(_ViewBase):
+    pass
+
+
 class ReifiedRelation[TTarget](_DeclaredClass):
     __metatype__ = "ReifiedRelation"
     Meta: ClassVar[type[ReifiedRelationMeta]] = ReifiedRelationMeta
@@ -57,6 +62,8 @@ class ReifiedRelation[TTarget](_DeclaredClass):
     CreateDB: ClassVar[type[_ReifiedRelationCreateDBBase]]
     Update: ClassVar[type[_ReifiedRelationUpdateBase]]
     UpdateDB: ClassVar[type[_ReifiedRelationUpdateDBBase]]
+
+    View: ClassVar[type[_ReifiedRelationViewBase]]
 
     target: list[TTarget]
 
@@ -111,7 +118,11 @@ class _ReifiedRelationDocumentUpdateDBBase(_UpdateDBBase):
     pass
 
 
-class _ReifiedRelationDocumentReferenceView(_ReferenceViewBase):
+class _ReifiedRelationDocumentReferenceViewBase(_ReferenceViewBase):
+    label: str
+
+
+class _ReifiedRelationDocumentViewBase(_ViewBase):
     label: str
 
 
@@ -122,10 +133,12 @@ class ReifiedRelationDocument[TTarget](_DeclaredClass):
     _meta: ClassVar[ReifiedRelationDocumentMeta] = ReifiedRelationDocumentMeta()  # pyright: ignore[reportIncompatibleVariableOverride]
 
     Create: ClassVar[type[_ReifiedRelationDocumentCreateBase]]
-    CreateDB: ClassVar[type[_ReifiedRelationCreateDBBase]]
+    CreateDB: ClassVar[type[_ReifiedRelationDocumentCreateDBBase]]
     Update: ClassVar[type[_ReifiedRelationDocumentUpdateBase]]
     UpdateDB: ClassVar[type[_ReifiedRelationDocumentUpdateDBBase]]
-    ReferenceView: ClassVar[type[_ReifiedRelationDocumentReferenceView]]
+    ReferenceView: ClassVar[type[_ReifiedRelationDocumentReferenceViewBase]]
+
+    View: ClassVar[type[_ReifiedRelationDocumentViewBase]]
 
     target: list[TTarget]
 

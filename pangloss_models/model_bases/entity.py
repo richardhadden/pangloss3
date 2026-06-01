@@ -19,6 +19,7 @@ from pangloss_models.model_bases.base_models import (
     _ReferenceViewBase,
     _UpdateBase,
     _UpdateDBBase,
+    _ViewBase,
 )
 
 
@@ -94,6 +95,10 @@ class _EntityUpdateDBBase(_UpdateDBBase):
     pass
 
 
+class _EntityViewBase(_ViewBase):
+    pass
+
+
 class Entity(_DeclaredClass, WithMeta[EntityMeta]):
     __metatype__ = "Entity"
     Meta: ClassVar[type[EntityMeta]] = EntityMeta
@@ -105,6 +110,8 @@ class Entity(_DeclaredClass, WithMeta[EntityMeta]):
     ReferenceView: ClassVar[type[_EntityReferenceView]]
     Update: ClassVar[type[_EntityUpdateBase]]
     UpdateDB: ClassVar[type[_EntityUpdateDBBase]]
+
+    View: ClassVar[type[_EntityViewBase]]
 
     @classmethod
     def __pydantic_init_subclass__(cls, **_):

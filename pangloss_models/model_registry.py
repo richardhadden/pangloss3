@@ -229,6 +229,11 @@ class ModelRegistry:
             can_have_update_model,
             initialise_update_model,
         )
+        from pangloss_models.initialise_models.initialise_view_model import (
+            add_fields_to_view_model,
+            can_have_view_model,
+            initialise_view_model,
+        )
 
         graph = cls._build_graph()
         order, cyclic = cls._toposort(graph)
@@ -277,3 +282,8 @@ class ModelRegistry:
             initialise_update_db_model(model)
 
             add_fields_to_update_db_model(model)
+
+        for model in chain(cyclic, order):
+            if can_have_view_model(model):
+                initialise_view_model(model=model)
+                add_fields_to_view_model(model.View, frozenset())
