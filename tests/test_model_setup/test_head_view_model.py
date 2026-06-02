@@ -104,3 +104,5 @@ def test_reified_relation_document_has_head_view():
         SomethingInPlace[Person].HeadView.model_fields["meta"].annotation
         is _APIHeadMeta
     )
+
+    assert SomethingInPlace[Person].HeadView._owner is SomethingInPlace[Person]
