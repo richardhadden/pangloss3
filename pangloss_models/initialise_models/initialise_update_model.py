@@ -1,9 +1,9 @@
 from functools import cache
 from types import UnionType
-from typing import Annotated, Any, ClassVar, Literal, Union, cast
+from typing import Annotated, ClassVar, Literal, Union, cast
 
 from frozendict import frozendict
-from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag, model_validator
+from pydantic import ConfigDict, Field, model_validator
 from pydantic import create_model as pydantic_create_model
 from pydantic.alias_generators import to_camel
 from pydantic.fields import FieldInfo
@@ -163,7 +163,7 @@ def build_generic_update_model_from_type_option(
     initialise_update_model(generic_relation_type)
 
     # Add the non-TypeVar fields to the base model
-    add_fields_to_update_model(generic_relation_type.Update, [])
+    add_fields_to_update_model(generic_relation_type.Update, frozenset())
 
     # Rebuild
     generic_relation_type.Update.model_rebuild(force=True)
@@ -371,7 +371,7 @@ def build_bound_field_update_model[
     ]
 ](
     update_model: TModel,
-    field_bindings: list[FieldBinding],
+    field_bindings: frozenset[FieldBinding],
 ) -> TModel:
 
     assert issubclass(
@@ -412,12 +412,12 @@ def build_bound_field_update_model[
     build_label_field_on_update_model(bound_fields_create_model)
 
     add_fields_to_update_model(bound_fields_create_model, fields_to_bind=field_bindings)
-    bound_fields_create_model.model_rebuild(force=True)
+    bound_fields_create_model.model_rebuild(force=True)  # type: ignore
     return bound_fields_create_model
 
 
 def get_relation_annotation_types(
-    field_definition: RelationFieldDefinition, field_bindings: list[FieldBinding]
+    field_definition: RelationFieldDefinition, field_bindings: frozenset[FieldBinding]
 ) -> UnionType | type[list[UnionType]] | tuple[list[UnionType]] | None:
     types = []
     for type_option in field_definition.type_options:
@@ -507,7 +507,7 @@ def add_fields_to_update_model(
         | _ConjunctionUpdateBase
         | _SemanticSpaceUpdateBase
     ],
-    fields_to_bind: list,
+    fields_to_bind: frozenset,
 ) -> None:
     pass
 
@@ -566,10 +566,12 @@ def add_fields_to_update_model(
 
         annotation = get_relation_annotation_types(
             field_definition,
-            field_bindings=[
-                *field_definition.bind_to_child_field,
-                *fields_to_bind,
-            ],
+            field_bindings=frozenset(
+                [
+                    *field_definition.bind_to_child_field,
+                    *fields_to_bind,
+                ]
+            ),
         )
 
         field_optional = False

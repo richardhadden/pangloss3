@@ -62,8 +62,8 @@ def initialise_head_view_model(
     if not can_have_head_view_model(model):
         return
 
-    # Checks if HeadView model has already been created; do not duplicate as we depend
-    # on model reference!
+    # Checks if HeadView model has already been created;
+    # do not duplicate as we depend on persistent model reference!
     if "HeadView" in model.__dict__:
         return
 
