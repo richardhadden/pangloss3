@@ -54,12 +54,12 @@ def initialise_view_model(
     if not can_have_head_view_model(model):
         return
 
-    # Checks if View model has already been created; do not duplicate as we depend
+    # Checks if HeadView model has already been created; do not duplicate as we depend
     # on model reference!
     if "HeadView" in model.__dict__:
         return
 
-    # Extracts from the _DeclaredClass definition the annotation for .Create
+    # Extracts from the _DeclaredClass definition the annotation for .HeadView
     head_view_base_type = get_head_view_base_model_type(model)
     if not head_view_base_type:
         return
@@ -72,7 +72,7 @@ def initialise_view_model(
         __doc__=model._meta.description if model._meta.description else "",
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[model.__name__], model.__name__),  # type: ignore
-    )  # pyright: ignore[reportAttributeAccessIssue]
+    )
 
     build_label_field_on_head_view_model(model.HeadView)
 

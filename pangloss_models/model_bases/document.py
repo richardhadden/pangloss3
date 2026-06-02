@@ -82,11 +82,18 @@ class _DocumentUpdateDBBase(_UpdateDBBase):
     pass
 
 
-class DocumentReferenceViewBase(_ReferenceViewBase):
-    pass
+class _DocumentReferenceViewAPIMeta(_BaseObject):
+    semantic_spaces: list[str] = Field(default_factory=list)
+    semantic_space_labels: list[str] = Field(default_factory=list)
 
 
-class DocumentReferenceSetBase(_ReferenceSetBase):
+class _DocumentReferenceViewBase(_ReferenceViewBase):
+    meta: _DocumentReferenceViewAPIMeta = Field(
+        default_factory=_DocumentReferenceViewAPIMeta
+    )
+
+
+class _DocumentReferenceSetBase(_ReferenceSetBase):
     pass
 
 
@@ -107,8 +114,8 @@ class Document(_DeclaredClass, WithMeta[DocumentMeta]):
     View: ClassVar[type[_DocumentViewBase]]
     HeadView: ClassVar[type[_DocumentHeadViewBase]]
 
-    ReferenceView: ClassVar[type[DocumentReferenceViewBase]]
-    ReferenceSetBase: ClassVar[type[DocumentReferenceSetBase]]
+    ReferenceView: ClassVar[type[_DocumentReferenceViewBase]]
+    ReferenceSetBase: ClassVar[type[_DocumentReferenceSetBase]]
 
     def __new__(cls, *args, **kwargs) -> _DocumentCreateBase:
         return cls.Create(*args, **kwargs)

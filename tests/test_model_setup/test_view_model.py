@@ -818,5 +818,21 @@ def test_list_validators():
     Factoid.View(id=uuid7(), label="A Factoid", numbers=[2, 2, 2])
 
 
+@no_type_check
 def test_meta_on_view_model():
-    assert False
+    class Statement(Document):
+        pass
+
+    initialise()
+
+    st = Statement.View(
+        id=uuid7(),
+        label="A Statement",
+        meta={
+            "semantic_spaces": ["Negative"],
+            "semantic_space_labels": ["Order -> Negative"],
+        },
+    )
+
+    assert st.meta.semantic_spaces == ["Negative"]
+    assert st.meta.semantic_space_labels == ["Order -> Negative"]
