@@ -99,3 +99,8 @@ def test_reified_relation_document_has_head_view():
     assert get_origin(annotated) is Annotated
 
     assert get_args(annotated)[0] is Person.ReferenceView
+
+    assert (
+        SomethingInPlace[Person].HeadView.model_fields["meta"].annotation
+        is _APIHeadMeta
+    )
