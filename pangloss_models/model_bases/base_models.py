@@ -340,13 +340,12 @@ def recursively_propagate_semantic_space_types(
 
     if isinstance(item, (_SemanticSpaceCreateDBBase, _SemanticSpaceUpdateDBBase)):
         semantic_spaces.append(getattr(item, "type"))
-        print(parent)
+
         if (
             parent
             and isinstance(parent, _DocumentCreateDBBase)
             and parent._meta.use_in_semantic_space_label  # type: ignore
         ):
-            print("here")
             semantic_space_labels.append(
                 f"{getattr(parent, 'type')} -> {getattr(item, 'type')}"
             )
@@ -428,7 +427,7 @@ class _CreateDBBase(_ActionClass):
     semantic_spaces: list[str] = Field(default_factory=list)
     semantic_space_labels: list[str] = Field(default_factory=list)
     _labels = property(get_labels_for_db_classes)
-    _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Update"))
+    _fulfils_classes = property(lambda self: get_fulfilled_classes(self, "Create"))
 
     @model_validator(mode="before")
     @classmethod
@@ -477,6 +476,7 @@ class _UpdateBase(_ActionClass):
     id: UUID
 
     def _to_db_model(self):
+        print("called for", self.__class__._owner.__name__)
         db_model_instance = self._owner.UpdateDB(**self.model_dump())  # type: ignore
         recursively_propagate_semantic_space_types(db_model_instance, [], [], None)
         return db_model_instance

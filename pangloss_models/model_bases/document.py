@@ -84,6 +84,9 @@ class _DocumentUpdateDBBase(_UpdateDBBase):
 
 
 class _DocumentReferenceViewAPIMeta(_BaseObject):
+    is_head_node: bool = False
+    head_node_id: UUID | None = None
+    head_node_type: str | None = None
     semantic_spaces: list[str] = Field(default_factory=list)
     semantic_space_labels: list[str] = Field(default_factory=list)
 

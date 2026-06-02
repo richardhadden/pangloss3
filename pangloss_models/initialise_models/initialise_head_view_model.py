@@ -125,8 +125,6 @@ def initialise_head_view_model(
         incoming_field_name,
         incoming_relation_definitions,
     ) in model._meta.field_definitions.incoming_fields.items():
-        print(incoming_field_name)
-
         annotation_types: list[Any] = []
         for incoming_relation_definition in incoming_relation_definitions:
             if incoming_relation_definition.via_reified:
@@ -142,7 +140,7 @@ def initialise_head_view_model(
 
         if annotation_types:
             annotation = Union[*annotation_types]  # type:ignore
-            print(annotation)
+
             model.HeadView.model_fields[incoming_field_name] = FieldInfo(
                 annotation=list[annotation], default_factory=list
             )

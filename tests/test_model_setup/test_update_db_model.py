@@ -576,6 +576,7 @@ def test_relation_with_double_reified_relation():
     )
 
     st1_db = st1._to_db_model()
+
     assert isinstance(st1_db, Statement.UpdateDB)
     assert isinstance(st1_db.is_about_person, WithProxy.UpdateDB)
     assert isinstance(st1_db.is_about_person.target[0], Identification.UpdateDB)
@@ -737,7 +738,7 @@ def test_relation_with_conjunction():
     )
     assert f2.label == "Another Factoid"
     assert f2.has_statements.type == "Causes"
-    print(f2.has_statements)
+
     assert isinstance(f2.has_statements, causes_statement_update_db)
     assert f2.has_statements.cause.type == "Statement"
     assert isinstance(f2.has_statements.cause, Statement.UpdateDB)
