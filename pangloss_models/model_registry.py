@@ -248,7 +248,7 @@ class ModelRegistry:
             try:
                 initialise_field_definitions(model)
             except PanglossModelError as e:
-                raise e
+                raise PanglossModelError(e)
             except Exception as e:
                 print(f"Exception on init fields of model {model.__name__}", e)
 

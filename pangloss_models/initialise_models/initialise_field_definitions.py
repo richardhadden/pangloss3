@@ -710,6 +710,12 @@ def initialise_field_definitions(model: type[_DeclaredClass]):
     field types, while applying subclassing rules and relation config.
     """
 
+    if issubclass(model, _DeclaredClass):
+        for field_name in model.model_fields.keys():
+            if field_name == "meta":
+                raise PanglossModelError("'meta' is a Pangloss reserved name"
+                f"and cannot be used as a model field in ({model.__name__})")
+
     if issubclass(model, EdgeModel):
         for field_name, field_info in model.model_fields.items():
             if is_relatable(field_info.annotation) or is_list_relatable(

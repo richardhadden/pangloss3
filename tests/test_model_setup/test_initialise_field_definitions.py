@@ -1991,3 +1991,12 @@ def test_incoming_relations():
             ],
         )
     ]
+
+
+def test_meta_is_not_allowed_as_a_field_name():
+    with pytest.raises(PanglossModelError):
+
+        class Statement(Document):
+            meta: str
+
+        initialise()

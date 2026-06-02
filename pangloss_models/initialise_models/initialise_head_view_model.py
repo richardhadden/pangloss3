@@ -81,8 +81,10 @@ def initialise_head_view_model(
         __config__=ConfigDict(alias_generator=to_camel),
         type=(Literal[model.__name__], model.__name__),  # type: ignore
     )
-
+    print("---")
+    print(model)
     for field_name, field_info in model.View.model_fields.items():
+        print(field_name)
         if field_name == "meta":
             continue
         model.HeadView.model_fields[field_name] = field_info
