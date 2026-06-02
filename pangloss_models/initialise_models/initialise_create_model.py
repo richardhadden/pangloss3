@@ -212,7 +212,7 @@ def build_generic_create_model_from_type_option(
     initialise_create_model(generic_relation_type)
 
     # Add the non-TypeVar fields to the base model
-    add_fields_to_create_model(generic_relation_type.Create, [])
+    add_fields_to_create_model(generic_relation_type.Create, frozenset())
 
     # Rebuild
     generic_relation_type.Create.model_rebuild(force=True)
@@ -434,7 +434,7 @@ def build_bound_field_create_model[
     build_label_field_on_create_model(bound_fields_create_model)
 
     add_fields_to_create_model(bound_fields_create_model, fields_to_bind=field_bindings)
-    bound_fields_create_model.model_rebuild(force=True)
+    bound_fields_create_model.model_rebuild(force=True)  # type: ignore
     return bound_fields_create_model
 
 
@@ -515,7 +515,7 @@ def add_fields_to_create_model(
         | _ConjunctionCreateBase
         | _SemanticSpaceCreateBase
     ],
-    fields_to_bind: list,
+    fields_to_bind: frozenset[FieldBinding],
 ) -> None:
 
     # Literal fields
