@@ -461,7 +461,7 @@ class _ViewBase(_ActionClass):
     id: UUID
 
 
-class APIHeadMeta(_BaseObject):
+class _APIHeadMeta(_BaseObject):
     created_by: str
     created_when: datetime.datetime
     updated_by: str
@@ -470,7 +470,7 @@ class APIHeadMeta(_BaseObject):
 
 class _HeadViewBase(_ActionClass):
     id: UUID
-    meta: APIHeadMeta
+    meta: _APIHeadMeta
 
 
 class _UpdateBase(_ActionClass):

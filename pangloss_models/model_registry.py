@@ -216,6 +216,10 @@ class ModelRegistry:
         from pangloss_models.initialise_models.initialise_field_definitions import (
             initialise_field_definitions,
         )
+        from pangloss_models.initialise_models.initialise_head_view_model import (
+            can_have_head_view_model,
+            initialise_head_view_model,
+        )
         from pangloss_models.initialise_models.initialise_reference_models import (
             initialise_reference_set_model,
             initialise_reference_view_model,
@@ -287,3 +291,7 @@ class ModelRegistry:
             if can_have_view_model(model):
                 initialise_view_model(model=model)
                 add_fields_to_view_model(model.View, frozenset())
+
+        for model in chain(cyclic, order):
+            if can_have_head_view_model(model):
+                initialise_head_view_model(model)

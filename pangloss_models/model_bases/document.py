@@ -11,6 +11,7 @@ from pangloss_models.field_definitions import (
 )
 from pangloss_models.model_bases.base_models import (
     DeclaredClassMeta,
+    _APIHeadMeta,
     _BaseObject,
     _CreateBase,
     _CreateDBBase,
