@@ -2002,3 +2002,42 @@ def test_meta_is_not_allowed_as_a_field_name():
             meta: str
 
         initialise()
+
+
+def test_incoming_relation_via_embedded():
+    class Intermedate[T](ReifiedRelation[T]):
+        pass
+
+    class Statement(Document):
+        date: Date
+
+    class Date(Embedded):
+        date_specific: DateSpecific
+
+    class DateSpecific(Embedded):
+        dude: Dude
+        dude_via_reified: Intermedate[Dude]
+
+    class Dude(Entity):
+        pass
+
+    initialise()
+
+    assert "dude_reverse" in Dude._meta.field_definitions.incoming_fields
+    assert Dude._meta.field_definitions.incoming_fields["dude_reverse"] == [
+        IncomingRelationDefinition(
+            source=Statement,
+            field_definition=DateSpecific._meta.fields.relation_fields["dude"],
+            via_reified=False,
+        )
+    ]
+    assert "dude_via_reified_reverse" in Dude._meta.field_definitions.incoming_fields
+    assert Dude._meta.field_definitions.incoming_fields["dude_via_reified_reverse"] == [
+        IncomingRelationDefinition(
+            source=Statement,
+            field_definition=DateSpecific._meta.fields.relation_fields[
+                "dude_via_reified"
+            ],
+            via_reified=True,
+        )
+    ]
