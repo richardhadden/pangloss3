@@ -250,6 +250,7 @@ class RelationToTypeVar(RelationOption):
 class IncomingRelationDefinition:
     source: type[_DeclaredClass]
     field_definition: RelationFieldDefinition
+    via_reified: bool
 
 
 class ModelFieldDict[K, V](dict[K, V]):

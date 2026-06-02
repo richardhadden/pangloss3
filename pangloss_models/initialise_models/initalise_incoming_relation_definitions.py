@@ -48,7 +48,9 @@ def initialise_incoming_relation_definitions(model: type[_DeclaredClass]):
                         relation_field_definition.reverse_name
                     ].append(
                         IncomingRelationDefinition(
-                            field_definition=relation_field_definition, source=model
+                            field_definition=relation_field_definition,
+                            source=model,
+                            via_reified=False,
                         )
                     )
                 case (
@@ -66,6 +68,8 @@ def initialise_incoming_relation_definitions(model: type[_DeclaredClass]):
                             relation_field_definition.reverse_name
                         ].append(
                             IncomingRelationDefinition(
-                                field_definition=relation_field_definition, source=model
+                                field_definition=relation_field_definition,
+                                source=model,
+                                via_reified=True,
                             )
                         )

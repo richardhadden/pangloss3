@@ -1978,6 +1978,7 @@ def test_incoming_relations():
         IncomingRelationDefinition(
             source=Statement,
             field_definition=Statement._meta.fields.relation_fields["involves_person"],
+            via_reified=False,
         )
     ]
 
@@ -1989,6 +1990,7 @@ def test_incoming_relations():
             field_definition=Statement._meta.fields.relation_fields[
                 "involves_person_via_reified"
             ],
+            via_reified=True,
         )
     ]
 

@@ -106,3 +106,21 @@ def test_reified_relation_document_has_head_view():
     )
 
     assert SomethingInPlace[Person].HeadView._owner is SomethingInPlace[Person]
+
+
+@no_type_check
+def test_incoming_relation_simple():
+    class Person(Entity):
+        pass
+
+    class Statement(Document):
+        features_person: Person
+
+    initialise()
+
+    assert "features_person_reverse" in Person.HeadView.model_fields
+
+    assert (
+        Person.HeadView.model_fields["features_person_reverse"].annotation
+        is Statement.ReferenceView
+    )

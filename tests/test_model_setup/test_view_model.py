@@ -1,28 +1,23 @@
 import datetime
-import uuid
-from inspect import isclass
 from types import UnionType
 from typing import Annotated, Literal, get_args, get_origin, no_type_check
-from uuid import UUID, uuid7
+from uuid import uuid7
 
 import pytest
 from annotated_types import Gt, MinLen
-from pydantic import AnyHttpUrl, ValidationError
+from pydantic import ValidationError
 
 from pangloss_models import initialise
-from pangloss_models.exceptions import PanglossMetaError
 from pangloss_models.field_definitions import (
     FieldBinding,
     FieldSubclassing,
     ListFieldDefinition,
     LiteralFieldDefinition,
-    RelationFieldDefinition,
 )
 from pangloss_models.model_bases.annotated_value import AnnotatedValue
 from pangloss_models.model_bases.configs import RelationConfig
 from pangloss_models.model_bases.conjunction import (
     Conjunction,
-    _ConjunctionCreateBase,
     _ConjunctionViewBase,
 )
 from pangloss_models.model_bases.document import Document
@@ -32,12 +27,10 @@ from pangloss_models.model_bases.entity import Entity
 from pangloss_models.model_bases.helpers import DBField, Fulfils, ViaEdge
 from pangloss_models.model_bases.reified_relation import (
     ReifiedRelation,
-    _ReifiedRelationCreateBase,
     _ReifiedRelationViewBase,
 )
 from pangloss_models.model_bases.semantic_space import (
     SemanticSpace,
-    _SemanticSpaceCreateBase,
     _SemanticSpaceViewBase,
 )
 from pangloss_models.model_bases.trait import Trait

@@ -1,4 +1,4 @@
-from typing import ClassVar, Literal
+from typing import ClassVar, Literal, Union
 
 from pydantic import ConfigDict
 from pydantic import create_model as pydantic_create_model
@@ -86,5 +86,26 @@ def initialise_head_view_model(
         if field_name == "meta":
             continue
         model.HeadView.model_fields[field_name] = field_info
+
+    for (
+        incoming_field_name,
+        incoming_relation_definitions,
+    ) in model._meta.field_definitions.incoming_fields.items():
+        print(incoming_field_name)
+
+        annotation_types = []
+        for incoming_relation_definition in incoming_relation_definitions:
+            if incoming_relation_definition.via_reified:
+                pass
+            else:
+                annotation_types.append(
+                    incoming_relation_definition.source.ReferenceView
+                )
+
+        if annotation_types:
+            annotation = Union[*annotation_types]  # type:ignore
+            model.HeadView.model_fields[incoming_field_name] = FieldInfo(
+                annotation=annotation  # type:ignore
+            )
 
     model.HeadView.model_rebuild(force=True)
