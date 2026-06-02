@@ -1,11 +1,17 @@
+from datetime import datetime
 from typing import Annotated, get_args, get_origin, no_type_check
-from uuid import UUID
+from uuid import UUID, uuid7
+
+from pydantic.fields import FieldInfo
 
 from pangloss_models import initialise
 from pangloss_models.model_bases.base_models import _APIHeadMeta
 from pangloss_models.model_bases.document import Document
 from pangloss_models.model_bases.entity import Entity
-from pangloss_models.model_bases.reified_relation import ReifiedRelationDocument
+from pangloss_models.model_bases.reified_relation import (
+    ReifiedRelation,
+    ReifiedRelationDocument,
+)
 
 
 @no_type_check
@@ -108,6 +114,14 @@ def test_reified_relation_document_has_head_view():
     assert SomethingInPlace[Person].HeadView._owner is SomethingInPlace[Person]
 
 
+TEST_META = {
+    "created_by": "Me",
+    "created_when": datetime.now(),
+    "updated_by": "Me",
+    "updated_when": datetime.now(),
+}
+
+
 @no_type_check
 def test_incoming_relation_simple():
     class Person(Entity):
@@ -122,5 +136,59 @@ def test_incoming_relation_simple():
 
     assert (
         Person.HeadView.model_fields["features_person_reverse"].annotation
-        is Statement.ReferenceView
+        == list[Statement.ReferenceView]
     )
+
+    p = Person.HeadView(id=uuid7(), label="A Person", meta=TEST_META)
+
+    p2 = Person.HeadView(
+        id=uuid7(),
+        label="A Person",
+        meta=TEST_META,
+        features_person_reverse=[
+            {"type": "Statement", "id": uuid7(), "label": "A Statement"}
+        ],
+    )
+
+    assert isinstance(p2.features_person_reverse[0], Statement.ReferenceView)
+    assert p2.features_person_reverse[0].label == "A Statement"
+
+
+@no_type_check
+def test_incoming_relation_via_reified():
+    class Person(Entity):
+        pass
+
+    class Identification[T](ReifiedRelation[T]):
+        certainty: int
+
+    class Statement(Document):
+        involves_person: Identification[Person]
+
+    initialise()
+
+    assert "involves_person_reverse" in Person.HeadView.model_fields
+
+    involves_person_reverse_annotation = Person.HeadView.model_fields[
+        "involves_person_reverse"
+    ].annotation
+
+    assert get_origin(involves_person_reverse_annotation) is list
+
+    bound_statement_view = get_args(involves_person_reverse_annotation)[0]
+    assert issubclass(bound_statement_view, Statement.View)
+    assert "involves_person" in bound_statement_view.model_fields
+    assert issubclass(
+        bound_statement_view.model_fields["involves_person"].annotation,
+        Identification.View,
+    )
+
+    identification_view = bound_statement_view.model_fields[
+        "involves_person"
+    ].annotation
+
+    assert get_origin(identification_view.model_fields["target"].annotation) is list
+
+    annotated = get_args(identification_view.model_fields["target"].annotation)[0]
+
+    assert get_args(annotated)[0] is Person.ReferenceView
